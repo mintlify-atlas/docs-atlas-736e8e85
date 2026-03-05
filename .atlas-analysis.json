@@ -1,0 +1,191 @@
+{
+  "projectType": "api-service",
+  "projectName": "Medical Center API",
+  "projectDescription": "REST API for managing medical center appointments, doctors, patients, and administrative operations with role-based access control.",
+  "theme": "palm",
+  "primaryColor": "#0ea5e9",
+  "lightColor": "#38bdf8",
+  "darkColor": "#0284c7",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/database-schema",
+              "concepts/user-roles",
+              "concepts/appointment-workflow"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/setup",
+              "guides/environment-variables",
+              "guides/database-setup",
+              "guides/deployment"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Public Endpoints",
+            "pages": [
+              "api-reference/public/appointments",
+              "api-reference/public/doctors",
+              "api-reference/public/specialties",
+              "api-reference/public/contact"
+            ]
+          },
+          {
+            "group": "Appointments",
+            "pages": [
+              "api-reference/appointments/list",
+              "api-reference/appointments/get",
+              "api-reference/appointments/confirm",
+              "api-reference/appointments/attend",
+              "api-reference/appointments/cancel",
+              "api-reference/appointments/delete",
+              "api-reference/appointments/search"
+            ]
+          },
+          {
+            "group": "Doctors",
+            "pages": [
+              "api-reference/doctors/list",
+              "api-reference/doctors/create",
+              "api-reference/doctors/update",
+              "api-reference/doctors/delete"
+            ]
+          },
+          {
+            "group": "Specialties",
+            "pages": [
+              "api-reference/specialties/list",
+              "api-reference/specialties/create",
+              "api-reference/specialties/update",
+              "api-reference/specialties/delete"
+            ]
+          },
+          {
+            "group": "Users & Persons",
+            "pages": [
+              "api-reference/users/list",
+              "api-reference/users/create",
+              "api-reference/users/update",
+              "api-reference/users/delete",
+              "api-reference/persons/list",
+              "api-reference/persons/create",
+              "api-reference/persons/update",
+              "api-reference/persons/delete"
+            ]
+          },
+          {
+            "group": "Clients",
+            "pages": [
+              "api-reference/clients/list",
+              "api-reference/clients/get"
+            ]
+          },
+          {
+            "group": "Contact",
+            "pages": [
+              "api-reference/contact/list",
+              "api-reference/contact/get",
+              "api-reference/contact/update",
+              "api-reference/contact/delete"
+            ]
+          },
+          {
+            "group": "Medical History",
+            "pages": [
+              "api-reference/history/create",
+              "api-reference/history/get"
+            ]
+          },
+          {
+            "group": "Dashboard",
+            "pages": [
+              "api-reference/dashboard/stats",
+              "api-reference/dashboard/appointments-by-status",
+              "api-reference/dashboard/recent-appointments",
+              "api-reference/dashboard/upcoming-appointments"
+            ]
+          },
+          {
+            "group": "Authentication",
+            "pages": [
+              "api-reference/auth/login",
+              "api-reference/auth/verify"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Appointment scheduling and management with multiple states (pending, confirmed, attended, cancelled)",
+    "Doctor and specialty catalog with public endpoints",
+    "Role-based access control (admin/assistant) using Supabase JWT authentication",
+    "Public client registration without authentication",
+    "Contact form for patient inquiries",
+    "Dashboard with statistics and analytics",
+    "Medical history tracking for attended appointments",
+    "Appointment search and filtering capabilities"
+  ],
+  "publicApiSurface": [
+    "POST /api/citas - Create appointment (public)",
+    "GET /api/medicos/public - List active doctors (public)",
+    "GET /api/especialidades - List specialties (public)",
+    "POST /api/contacto - Submit contact form (public)",
+    "GET /api/citas - List all appointments (admin/assistant)",
+    "GET /api/citas/:id - Get appointment details (admin/assistant)",
+    "GET /api/citas/buscar - Search appointments (admin/assistant)",
+    "PUT /api/citas/:id/confirmar - Confirm and assign appointment (admin/assistant)",
+    "PUT /api/citas/:id/atender - Mark appointment as attended (admin/assistant)",
+    "PUT /api/citas/:id/cancelar - Cancel appointment (admin/assistant)",
+    "DELETE /api/citas/:id - Delete appointment (admin only)",
+    "GET /api/medicos - List all doctors (admin)",
+    "POST /api/medicos - Create doctor (admin)",
+    "PUT /api/medicos/:id - Update doctor (admin)",
+    "DELETE /api/medicos/:id - Delete doctor (admin)",
+    "POST /api/especialidades - Create specialty (admin)",
+    "PUT /api/especialidades/:id - Update specialty (admin)",
+    "DELETE /api/especialidades/:id - Delete specialty (admin)",
+    "GET /api/usuarios - List users (admin)",
+    "POST /api/usuarios - Create user (admin)",
+    "PUT /api/usuarios/:id - Update user (admin)",
+    "DELETE /api/usuarios/:id - Delete user (admin)",
+    "GET /api/personas - List persons (admin/assistant)",
+    "POST /api/personas - Create person (admin)",
+    "PUT /api/personas/:id - Update person (admin/assistant)",
+    "DELETE /api/personas/:id - Delete person (admin)",
+    "GET /api/clientes - List public clients (admin/assistant)",
+    "GET /api/clientes/:id - Get client details (admin/assistant)",
+    "GET /api/contacto - List contact messages (public)",
+    "GET /api/contacto/:id - Get contact message (public)",
+    "PUT /api/contacto/:id - Update contact message (public)",
+    "DELETE /api/contacto/:id - Delete contact message (public)",
+    "POST /api/historial - Create medical history entry (admin/assistant)",
+    "GET /api/historial/:citaId - Get medical history for appointment (admin/assistant)",
+    "GET /api/dashboard/stats - Get dashboard statistics (admin/assistant)",
+    "GET /api/dashboard/citas-por-estado - Get appointments by status (admin/assistant)",
+    "GET /api/dashboard/citas-ultimos-7-dias - Get appointments last 7 days (admin/assistant)",
+    "GET /api/dashboard/proximas-citas - Get upcoming appointments (admin/assistant)",
+    "POST /api/admin-auth/login - Admin login",
+    "GET /api/admin-auth/verify - Verify admin token"
+  ]
+}

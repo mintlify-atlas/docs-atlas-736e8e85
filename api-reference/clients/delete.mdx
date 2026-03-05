@@ -1,0 +1,92 @@
+---
+title: 'Delete Client'
+api: 'DELETE /api/clientes/:id'
+description: 'Permanently delete a public client record'
+---
+
+## Overview
+
+Permanently deletes a public client from the system.
+
+<Warning>
+  **Destructive Operation**
+  
+  This is currently a public endpoint. Deleting a client will also cascade delete all associated appointments and contact messages due to database constraints.
+</Warning>
+
+## Path Parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the client to delete
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">
+  Success message: "Cliente eliminado correctamente"
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl -X DELETE http://localhost:3000/api/clientes/42
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:3000/api/clientes/42', {
+  method: 'DELETE'
+});
+const data = await response.json();
+```
+
+## Example Response
+
+```json 200 OK
+{
+  "message": "Cliente eliminado correctamente"
+}
+```
+
+## Error Responses
+
+<Accordion title="404 Not Found">
+  ```json
+  {
+    "message": "Cliente no encontrado"
+  }
+  ```
+  
+  No client exists with the specified ID.
+</Accordion>
+
+<Accordion title="500 Internal Server Error">
+  ```json
+  {
+    "message": "Error al eliminar cliente"
+  }
+  ```
+  
+  An error occurred while deleting the client. This may happen if there are database constraints preventing deletion.
+</Accordion>
+
+## Cascade Effects
+
+When a client is deleted, the following related records are also deleted due to cascade constraints:
+
+- All **appointments** (`citas`) associated with the client
+- All **contact messages** (`contacto`) from the client
+- Any **medical history** (`historial`) linked to deleted appointments
+
+## Use Cases
+
+- GDPR/data privacy compliance (right to be forgotten)
+- Removing duplicate or test client records
+- Data cleanup operations
+
+<Tip>
+  Consider implementing soft deletes or archiving instead of permanent deletion to maintain data integrity and audit trails.
+</Tip>
+
+<Info>
+  Source: `/home/daytona/workspace/source/src/routes/clientes.routes.js:95`
+</Info>

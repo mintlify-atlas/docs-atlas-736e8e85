@@ -1,0 +1,128 @@
+---
+title: 'Update Profile Photo'
+api: 'PUT /api/personas/:id/foto'
+description: 'Update the profile photo for a specific person'
+---
+
+## Overview
+
+Updates the profile photo URL for a person. Both admins and assistants can update profile photos.
+
+<Warning>
+  **Authentication Required**
+  
+  This endpoint requires a valid JWT token. Both `admin` and `asistente` roles can access this endpoint.
+</Warning>
+
+## Path Parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the person
+</ParamField>
+
+## Request Body
+
+<ParamField body="foto_url" type="string" required>
+  The URL of the new profile photo
+</ParamField>
+
+## Response
+
+Returns the updated person object with the new photo URL.
+
+<ResponseField name="id" type="number">
+  Person ID
+</ResponseField>
+
+<ResponseField name="nombres" type="string">
+  First name(s)
+</ResponseField>
+
+<ResponseField name="apellidos" type="string">
+  Last name(s)
+</ResponseField>
+
+<ResponseField name="telefono" type="string">
+  Phone number
+</ResponseField>
+
+<ResponseField name="dni" type="string">
+  National ID number
+</ResponseField>
+
+<ResponseField name="foto_url" type="string">
+  Updated profile photo URL
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Creation timestamp
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl -X PUT http://localhost:3000/api/personas/5/foto \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "foto_url": "https://example.com/photos/updated-photo.jpg"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:3000/api/personas/5/foto', {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    foto_url: 'https://example.com/photos/updated-photo.jpg'
+  })
+});
+const updated = await response.json();
+```
+
+## Example Response
+
+```json 200 OK
+{
+  "id": 5,
+  "nombres": "María",
+  "apellidos": "González",
+  "telefono": "+1234567890",
+  "dni": "12345678",
+  "foto_url": "https://example.com/photos/updated-photo.jpg",
+  "created_at": "2024-03-01T08:00:00.000Z"
+}
+```
+
+## Error Responses
+
+<Accordion title="404 Not Found">
+  ```json
+  {
+    "message": "Persona no encontrada"
+  }
+  ```
+  
+  No person exists with the specified ID.
+</Accordion>
+
+<Accordion title="500 Internal Server Error">
+  ```json
+  {
+    "message": "Error al actualizar foto"
+  }
+  ```
+  
+  An error occurred while updating the photo.
+</Accordion>
+
+## Implementation Note
+
+This endpoint uses a controller function `actualizarFotoPersona` which may include additional validation or image processing logic.
+
+<Info>
+  Source: `/home/daytona/workspace/source/src/routes/personas.routes.js:140`
+</Info>

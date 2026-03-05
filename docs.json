@@ -97,12 +97,19 @@
             "group": "Users & Persons",
             "pages": [
               "api-reference/users/list",
+              "api-reference/users/get-role",
+              "api-reference/users/get-me",
+              "api-reference/users/get",
               "api-reference/users/create",
               "api-reference/users/update",
+              "api-reference/users/update-role",
               "api-reference/users/delete",
               "api-reference/persons/list",
+              "api-reference/persons/get",
               "api-reference/persons/create",
               "api-reference/persons/update",
+              "api-reference/persons/update-me",
+              "api-reference/persons/update-photo",
               "api-reference/persons/delete"
             ]
           },
@@ -110,7 +117,10 @@
             "group": "Clients",
             "pages": [
               "api-reference/clients/list",
-              "api-reference/clients/get"
+              "api-reference/clients/get",
+              "api-reference/clients/create",
+              "api-reference/clients/update",
+              "api-reference/clients/delete"
             ]
           },
           {
@@ -125,8 +135,8 @@
           {
             "group": "Medical History",
             "pages": [
-              "api-reference/history/create",
-              "api-reference/history/get"
+              "api-reference/history/list",
+              "api-reference/history/create"
             ]
           },
           {
@@ -139,10 +149,9 @@
             ]
           },
           {
-            "group": "Authentication",
+            "group": "Admin Authentication",
             "pages": [
-              "api-reference/auth/login",
-              "api-reference/auth/verify"
+              "api-reference/auth/create-user"
             ]
           }
         ]

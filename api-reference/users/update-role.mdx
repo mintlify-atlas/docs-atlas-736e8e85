@@ -1,0 +1,125 @@
+---
+title: 'Update User Role'
+api: 'PUT /api/usuarios/:id/rol'
+description: 'Update only the role of a specific user'
+---
+
+## Overview
+
+Changes the role of a user without modifying other user properties. This is useful for promoting or demoting users between admin and assistant roles.
+
+<Warning>
+  **Admin Only**
+  
+  This endpoint requires authentication and the `admin` role.
+</Warning>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The Supabase authentication UUID of the user
+</ParamField>
+
+## Request Body
+
+<ParamField body="role" type="string" required>
+  The new role for the user. Must be either `admin` or `asistente`.
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">
+  Success message: "Rol actualizado"
+</ResponseField>
+
+<ResponseField name="usuario" type="object">
+  The updated user object
+  
+  <Expandable title="usuario fields">
+    <ResponseField name="id" type="string">
+      Supabase UUID
+    </ResponseField>
+    <ResponseField name="persona_id" type="number">
+      Associated person ID
+    </ResponseField>
+    <ResponseField name="role" type="string">
+      Updated role
+    </ResponseField>
+    <ResponseField name="created_at" type="string">
+      Creation timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl -X PUT http://localhost:3000/api/usuarios/a1b2c3d4-e5f6-7890-abcd-ef1234567890/rol \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "admin"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'http://localhost:3000/api/usuarios/a1b2c3d4-e5f6-7890-abcd-ef1234567890/rol',
+  {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${adminToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      role: 'admin'
+    })
+  }
+);
+```
+
+## Example Response
+
+```json 200 OK
+{
+  "message": "Rol actualizado",
+  "usuario": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "persona_id": 5,
+    "role": "admin",
+    "created_at": "2024-03-01T10:00:00.000Z"
+  }
+}
+```
+
+## Error Responses
+
+<Accordion title="400 Bad Request">
+  ```json
+  {
+    "message": "Role es obligatorio"
+  }
+  ```
+  
+  The `role` field was not provided in the request body.
+</Accordion>
+
+<Accordion title="404 Not Found">
+  ```json
+  {
+    "message": "Usuario no encontrado"
+  }
+  ```
+  
+  The user with the specified ID does not exist.
+</Accordion>
+
+## Use Cases
+
+- Promoting an assistant to admin
+- Demoting an admin to assistant
+- Correcting incorrectly assigned roles
+
+<Info>
+  Source: `/home/daytona/workspace/source/src/routes/usuarios.routes.js:215`
+</Info>

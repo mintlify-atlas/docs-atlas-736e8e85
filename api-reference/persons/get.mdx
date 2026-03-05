@@ -1,0 +1,97 @@
+---
+title: 'Get Person by ID'
+api: 'GET /api/personas/:id'
+description: 'Retrieve a specific person by their ID'
+---
+
+## Overview
+
+Returns detailed information about a specific person in the system.
+
+<Warning>
+  **Admin Only**
+  
+  This endpoint requires authentication and the `admin` role.
+</Warning>
+
+## Path Parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the person
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="number">
+  Person ID
+</ResponseField>
+
+<ResponseField name="nombres" type="string">
+  First name(s)
+</ResponseField>
+
+<ResponseField name="apellidos" type="string">
+  Last name(s)
+</ResponseField>
+
+<ResponseField name="telefono" type="string">
+  Phone number (nullable)
+</ResponseField>
+
+<ResponseField name="dni" type="string">
+  National ID number (nullable, unique)
+</ResponseField>
+
+<ResponseField name="foto_url" type="string">
+  Profile photo URL (nullable)
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Timestamp when the person was created
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl -X GET http://localhost:3000/api/personas/5 \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:3000/api/personas/5', {
+  headers: {
+    'Authorization': `Bearer ${adminToken}`
+  }
+});
+const person = await response.json();
+```
+
+## Example Response
+
+```json 200 OK
+{
+  "id": 5,
+  "nombres": "María",
+  "apellidos": "González",
+  "telefono": "+1234567890",
+  "dni": "12345678",
+  "foto_url": "https://example.com/photos/maria.jpg",
+  "created_at": "2024-03-01T08:00:00.000Z"
+}
+```
+
+## Error Responses
+
+<Accordion title="404 Not Found">
+  ```json
+  {
+    "message": "Persona no encontrada"
+  }
+  ```
+  
+  No person exists with the specified ID.
+</Accordion>
+
+<Info>
+  Source: `/home/daytona/workspace/source/src/routes/personas.routes.js:97`
+</Info>

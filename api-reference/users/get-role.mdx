@@ -1,0 +1,80 @@
+---
+title: 'Get User Role by Supabase ID'
+api: 'GET /api/usuarios/supabase/:id'
+description: 'Retrieve a user role by their Supabase authentication ID'
+---
+
+## Overview
+
+This endpoint retrieves the role of a user based on their Supabase authentication ID. It's typically used during login to determine the user's access level.
+
+<Note>
+  This endpoint does **not** require authentication. It's designed to be called during the login process before the user has a valid JWT token.
+</Note>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The Supabase authentication UUID for the user
+</ParamField>
+
+## Response
+
+<ResponseField name="role" type="string">
+  The user's role in the system. Can be either `admin` or `asistente`.
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl -X GET http://localhost:3000/api/usuarios/supabase/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'http://localhost:3000/api/usuarios/supabase/a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+);
+const data = await response.json();
+console.log(data.role); // 'admin' or 'asistente'
+```
+
+## Example Response
+
+```json 200 OK
+{
+  "role": "admin"
+}
+```
+
+## Error Responses
+
+<Accordion title="404 Not Found">
+  ```json
+  {
+    "message": "Usuario no registrado en el sistema"
+  }
+  ```
+  
+  The user exists in Supabase Auth but has not been registered in the Medical Center API system yet.
+</Accordion>
+
+<Accordion title="500 Internal Server Error">
+  ```json
+  {
+    "message": "Error interno"
+  }
+  ```
+  
+  An unexpected error occurred while processing the request.
+</Accordion>
+
+## Use Case
+
+This endpoint is typically called immediately after a successful Supabase authentication to:
+1. Verify the user is registered in the system
+2. Determine their role for client-side routing
+3. Configure appropriate UI permissions
+
+<Info>
+  Source: `/home/daytona/workspace/source/src/routes/usuarios.routes.js:15`
+</Info>

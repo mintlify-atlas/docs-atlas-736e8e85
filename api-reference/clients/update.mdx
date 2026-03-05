@@ -1,0 +1,145 @@
+---
+title: 'Update Client'
+api: 'PUT /api/clientes/:id'
+description: 'Update an existing public client record'
+---
+
+## Overview
+
+Updates information for an existing public client.
+
+<Note>
+  **No Authentication Required**
+  
+  This is currently a public endpoint, though it may be restricted in future versions.
+</Note>
+
+## Path Parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the client
+</ParamField>
+
+## Request Body
+
+All fields are optional. Only provided fields will be updated.
+
+<ParamField body="nombres" type="string">
+  First name(s)
+</ParamField>
+
+<ParamField body="apellidos" type="string">
+  Last name(s)
+</ParamField>
+
+<ParamField body="telefono" type="string">
+  Phone number
+</ParamField>
+
+<ParamField body="email" type="string">
+  Email address
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">
+  Success message: "Cliente actualizado"
+</ResponseField>
+
+<ResponseField name="cliente" type="object">
+  The updated client object
+  
+  <Expandable title="cliente fields">
+    <ResponseField name="id" type="number">
+      Client ID
+    </ResponseField>
+    <ResponseField name="nombres" type="string">
+      Updated first name(s)
+    </ResponseField>
+    <ResponseField name="apellidos" type="string">
+      Updated last name(s)
+    </ResponseField>
+    <ResponseField name="telefono" type="string">
+      Updated phone number
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      Updated email address
+    </ResponseField>
+    <ResponseField name="created_at" type="string">
+      Creation timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl -X PUT http://localhost:3000/api/clientes/42 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "telefono": "+5559876543",
+    "email": "pedro.new@example.com"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:3000/api/clientes/42', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    telefono: '+5559876543',
+    email: 'pedro.new@example.com'
+  })
+});
+const data = await response.json();
+```
+
+## Example Response
+
+```json 200 OK
+{
+  "message": "Cliente actualizado",
+  "cliente": {
+    "id": 42,
+    "nombres": "Pedro",
+    "apellidos": "Martínez",
+    "telefono": "+5559876543",
+    "email": "pedro.new@example.com",
+    "created_at": "2024-03-05T15:30:00.000Z"
+  }
+}
+```
+
+## Error Responses
+
+<Accordion title="404 Not Found">
+  ```json
+  {
+    "message": "Cliente no encontrado"
+  }
+  ```
+  
+  No client exists with the specified ID.
+</Accordion>
+
+<Accordion title="500 Internal Server Error">
+  ```json
+  {
+    "message": "Error al actualizar cliente"
+  }
+  ```
+  
+  An error occurred while updating the client.
+</Accordion>
+
+## Use Cases
+
+- Clients updating their own contact information
+- Staff correcting client data errors
+- Updating email or phone numbers
+
+<Info>
+  Source: `/home/daytona/workspace/source/src/routes/clientes.routes.js:65`
+</Info>

@@ -1,0 +1,146 @@
+---
+title: 'Create Supabase Auth User'
+api: 'POST /api/admin-auth/crear-auth'
+description: 'Create a new user in Supabase Auth (admin only)'
+---
+
+## Overview
+
+Creates a new user in Supabase Auth with email and password. This is an admin-only endpoint used to provision new system users.
+
+<Warning>
+  **Admin Only**
+  
+  This endpoint requires authentication with the `admin` role. The created user must then be registered in the internal usuarios table using `POST /api/usuarios`.
+</Warning>
+
+## Request Body
+
+<ParamField body="email" type="string" required>
+  The email address for the new user
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  The password for the new user
+</ParamField>
+
+## Response
+
+<ResponseField name="auth_user_id" type="string">
+  The Supabase Auth UUID for the created user. Use this ID when creating the corresponding record in `/api/usuarios`.
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl -X POST http://localhost:3000/api/admin-auth/crear-auth \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "new.user@example.com",
+    "password": "SecurePassword123!"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:3000/api/admin-auth/crear-auth', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${adminToken}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    email: 'new.user@example.com',
+    password: 'SecurePassword123!'
+  })
+});
+const data = await response.json();
+console.log(data.auth_user_id); // Use this UUID in POST /api/usuarios
+```
+
+## Example Response
+
+```json 200 OK
+{
+  "auth_user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}
+```
+
+## Error Responses
+
+<Accordion title="400 Bad Request">
+  ```json
+  {
+    "message": "Email y contraseña son obligatorios"
+  }
+  ```
+  
+  Missing required email or password fields.
+</Accordion>
+
+<Accordion title="400 Bad Request - Supabase Error">
+  ```json
+  {
+    "message": "User already registered"
+  }
+  ```
+  
+  The email address is already registered in Supabase Auth.
+</Accordion>
+
+<Accordion title="401 Unauthorized">
+  ```json
+  {
+    "message": "Token requerido"
+  }
+  ```
+  
+  No authentication token provided.
+</Accordion>
+
+<Accordion title="403 Forbidden">
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+  
+  User does not have admin role.
+</Accordion>
+
+## Two-Step User Creation Process
+
+Creating a complete system user requires two API calls:
+
+<Steps>
+  <Step title="Create Supabase Auth User">
+    Use this endpoint to create the authentication user:
+    
+    ```bash
+    POST /api/admin-auth/crear-auth
+    ```
+    
+    Save the returned `auth_user_id`.
+  </Step>
+  
+  <Step title="Create Internal User Record">
+    Use the UUID from step 1 to create the internal user record:
+    
+    ```bash
+    POST /api/usuarios
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "role": "asistente",
+      "persona_id": 5
+    }
+    ```
+  </Step>
+</Steps>
+
+<Info>
+  The user is created with `email_confirm: true`, so they can log in immediately without email verification.
+</Info>
+
+<Info>
+  Source: `/home/daytona/workspace/source/src/routes/adminAuth.routes.js:12`
+</Info>

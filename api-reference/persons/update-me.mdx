@@ -1,0 +1,144 @@
+---
+title: 'Update My Profile'
+api: 'PUT /api/personas/me'
+description: 'Update the authenticated user own person profile'
+---
+
+## Overview
+
+Allows authenticated users (admin or assistant) to update their own person information without needing to know their persona_id.
+
+<Warning>
+  **Authentication Required**
+  
+  This endpoint requires a valid JWT token. Both `admin` and `asistente` roles can use this endpoint.
+</Warning>
+
+## Request Body
+
+All fields are optional. Only provided fields will be updated.
+
+<ParamField body="nombres" type="string">
+  First name(s)
+</ParamField>
+
+<ParamField body="apellidos" type="string">
+  Last name(s)
+</ParamField>
+
+<ParamField body="telefono" type="string">
+  Phone number
+</ParamField>
+
+<ParamField body="dni" type="string">
+  National ID number (must be unique)
+</ParamField>
+
+<ParamField body="foto_url" type="string">
+  Profile photo URL
+</ParamField>
+
+## Response
+
+Returns the updated person object.
+
+<ResponseField name="id" type="number">
+  Person ID
+</ResponseField>
+
+<ResponseField name="nombres" type="string">
+  Updated first name(s)
+</ResponseField>
+
+<ResponseField name="apellidos" type="string">
+  Updated last name(s)
+</ResponseField>
+
+<ResponseField name="telefono" type="string">
+  Updated phone number
+</ResponseField>
+
+<ResponseField name="dni" type="string">
+  Updated DNI
+</ResponseField>
+
+<ResponseField name="foto_url" type="string">
+  Updated photo URL
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Creation timestamp
+</ResponseField>
+
+## Example Request
+
+```bash cURL
+curl -X PUT http://localhost:3000/api/personas/me \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "telefono": "+9876543210",
+    "foto_url": "https://example.com/new-photo.jpg"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:3000/api/personas/me', {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    telefono: '+9876543210',
+    foto_url: 'https://example.com/new-photo.jpg'
+  })
+});
+const updatedProfile = await response.json();
+```
+
+## Example Response
+
+```json 200 OK
+{
+  "id": 5,
+  "nombres": "María",
+  "apellidos": "González",
+  "telefono": "+9876543210",
+  "dni": "12345678",
+  "foto_url": "https://example.com/new-photo.jpg",
+  "created_at": "2024-03-01T08:00:00.000Z"
+}
+```
+
+## Error Responses
+
+<Accordion title="404 Not Found">
+  ```json
+  {
+    "message": "Persona no encontrada"
+  }
+  ```
+  
+  The authenticated user doesn't have an associated person record.
+</Accordion>
+
+<Accordion title="500 Internal Server Error">
+  ```json
+  {
+    "message": "Error al actualizar perfil"
+  }
+  ```
+  
+  An error occurred while updating the profile (e.g., duplicate DNI).
+</Accordion>
+
+## Use Cases
+
+- Users updating their own contact information
+- Users changing their profile photo
+- Self-service profile management
+
+<Info>
+  Source: `/home/daytona/workspace/source/src/routes/personas.routes.js:64`
+</Info>

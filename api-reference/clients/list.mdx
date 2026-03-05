@@ -1,0 +1,49 @@
+---
+title: 'List Clients'
+openapi: 'GET /api/clientes'
+---
+
+Retrieves a list of all public clients (clientes_publicos) in the system.
+
+## Authentication
+
+This endpoint is currently **public** and does not require authentication.
+
+<Note>
+  While this endpoint is currently public, it may be protected with admin/assistant role requirements in future versions.
+</Note>
+
+## Key Information
+
+- Public clients are created when users book appointments through the public booking system
+- These are separate from the Personas and Usuarios tables
+- Results are ordered by creation date (newest first)
+- Clients have simpler information compared to full persona records
+
+## Response
+
+Returns an array of client objects:
+
+- `id` (integer): Auto-incremented client identifier
+- `nombre` (string): Client name
+- `email` (string): Client email
+- `telefono` (string): Client phone number
+- `created_at` (datetime): Timestamp of client creation
+- Additional fields as defined in the schema
+
+## Use Cases
+
+Clientes_publicos are automatically created when:
+
+- Public users book appointments through the public booking interface
+- No authentication is required for the booking process
+- The system needs to store basic contact information for appointment notifications
+
+## Relationship with Other Entities
+
+Public clients (clientes_publicos) are separate from:
+
+- **Personas**: Used for detailed personal records of patients and staff
+- **Usuarios**: Used for authenticated system users with roles
+
+Public clients represent anonymous or unauthenticated users who interact with the public booking system.

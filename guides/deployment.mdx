@@ -1,0 +1,405 @@
+---
+title: 'Deployment Guide'
+description: 'Deploy the Medical Center API to production environments'
+---
+
+## Overview
+
+The Medical Center API is configured for easy deployment to Vercel and other Node.js hosting platforms. This guide covers deployment best practices, environment configuration, and production considerations.
+
+## Deployment to Vercel
+
+The API includes a `vercel.json` configuration file for seamless Vercel deployment.
+
+### Vercel Configuration
+
+Location: `vercel.json`
+
+```json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/src/server.js"
+    }
+  ]
+}
+```
+
+This configuration:
+- Uses `@vercel/node` builder for the Express server
+- Routes all requests to `src/server.js`
+- Supports serverless function deployment
+
+<Steps>
+  <Step title="Install Vercel CLI">
+    Install the Vercel CLI globally:
+    
+    ```bash
+    npm install -g vercel
+    ```
+  </Step>
+
+  <Step title="Login to Vercel">
+    Authenticate with your Vercel account:
+    
+    ```bash
+    vercel login
+    ```
+  </Step>
+
+  <Step title="Configure environment variables">
+    Set up production environment variables in Vercel:
+    
+    ```bash
+    vercel env add DATABASE_URL
+    vercel env add SUPABASE_URL
+    vercel env add SUPABASE_ANON_KEY
+    vercel env add SUPABASE_SERVICE_ROLE_KEY
+    ```
+    
+    Or configure them in the Vercel dashboard:
+    1. Go to your project settings
+    2. Navigate to Environment Variables
+    3. Add each variable with production values
+  </Step>
+
+  <Step title="Deploy to Vercel">
+    Deploy your application:
+    
+    ```bash
+    vercel --prod
+    ```
+    
+    Or push to your connected Git repository for automatic deployments.
+  </Step>
+
+  <Step title="Run database migrations">
+    After deployment, run migrations on your production database:
+    
+    ```bash
+    DATABASE_URL="your_production_url" npx prisma migrate deploy
+    ```
+  </Step>
+</Steps>
+
+## Production Environment Variables
+
+Configure these environment variables in your deployment platform:
+
+### Required Variables
+
+```bash
+# Production database with connection pooling
+DATABASE_URL="postgresql://user:password@host:6543/postgres?pgbouncer=true"
+
+# Supabase production configuration
+SUPABASE_URL="https://your-prod-project.supabase.co"
+SUPABASE_ANON_KEY="your_production_anon_key"
+SUPABASE_SERVICE_ROLE_KEY="your_production_service_role_key"
+```
+
+<Warning>
+Use **different Supabase projects** for development and production to isolate environments.
+</Warning>
+
+## Database Connection Pooling
+
+For production deployments, use connection pooling to handle multiple concurrent requests efficiently.
+
+### Using PgBouncer
+
+The API is configured to work with PgBouncer for connection pooling:
+
+```bash
+DATABASE_URL="postgresql://user:password@host:6543/postgres?pgbouncer=true"
+```
+
+**Key differences from development:**
+
+<CodeGroup>
+```bash Development (Direct)
+# Direct connection on port 5432
+DATABASE_URL="postgresql://postgres:password@localhost:5432/medical_center"
+```
+
+```bash Production (Pooled)
+# Connection pooling on port 6543
+DATABASE_URL="postgresql://user:password@host:6543/postgres?pgbouncer=true"
+```
+</CodeGroup>
+
+### Benefits of Connection Pooling
+
+- **Reduced database connections** - Reuses connections instead of creating new ones
+- **Better performance** - Handles concurrent requests efficiently
+- **Scalability** - Supports more simultaneous users
+- **Resource optimization** - Prevents connection exhaustion
+
+### Important Notes
+
+<Warning>
+**For migrations only:** Use the direct connection (port 5432) without PgBouncer:
+
+```bash
+DATABASE_URL="postgresql://user:password@host:5432/postgres" npx prisma migrate deploy
+```
+
+PgBouncer in transaction mode is not compatible with Prisma migrations.
+</Warning>
+
+## Alternative Deployment Platforms
+
+### Railway
+
+<Steps>
+  <Step title="Create a new project">
+    1. Connect your GitHub repository
+    2. Railway will auto-detect the Node.js project
+  </Step>
+
+  <Step title="Add PostgreSQL">
+    Add a PostgreSQL database service to your project
+  </Step>
+
+  <Step title="Configure environment variables">
+    Set all required environment variables in Railway dashboard
+  </Step>
+
+  <Step title="Deploy">
+    Railway automatically deploys on git push
+  </Step>
+</Steps>
+
+### Render
+
+<Steps>
+  <Step title="Create Web Service">
+    1. Connect your repository
+    2. Select "Node" environment
+  </Step>
+
+  <Step title="Configure build">
+    - Build Command: `npm install && npx prisma generate`
+    - Start Command: `npm start`
+  </Step>
+
+  <Step title="Add PostgreSQL">
+    Create a PostgreSQL database in Render
+  </Step>
+
+  <Step title="Set environment variables">
+    Configure all variables in Render dashboard
+  </Step>
+</Steps>
+
+### DigitalOcean App Platform
+
+<Steps>
+  <Step title="Create new app">
+    Connect your GitHub repository
+  </Step>
+
+  <Step title="Configure app">
+    - Type: Web Service
+    - Run Command: `npm start`
+    - Build Command: `npm install && npx prisma generate`
+  </Step>
+
+  <Step title="Add database">
+    Create a managed PostgreSQL database
+  </Step>
+
+  <Step title="Set environment variables">
+    Add all required variables in app settings
+  </Step>
+</Steps>
+
+## Pre-Deployment Checklist
+
+Before deploying to production:
+
+- [ ] All environment variables configured
+- [ ] Database migrations tested in staging
+- [ ] Supabase production project created
+- [ ] Connection pooling enabled (PgBouncer)
+- [ ] CORS settings configured for production domain
+- [ ] SSL/TLS enabled for database connections
+- [ ] Error logging and monitoring set up
+- [ ] Backup strategy implemented
+- [ ] API rate limiting configured (if needed)
+
+## Post-Deployment Tasks
+
+<Steps>
+  <Step title="Run database migrations">
+    Apply migrations to production database:
+    
+    ```bash
+    npx prisma migrate deploy
+    ```
+  </Step>
+
+  <Step title="Seed initial data">
+    If this is the first deployment, seed the database:
+    
+    ```bash
+    node prisma/seed.js
+    ```
+  </Step>
+
+  <Step title="Verify API endpoints">
+    Test that all endpoints are working:
+    
+    ```bash
+    curl https://your-domain.com/api/especialidades
+    ```
+  </Step>
+
+  <Step title="Monitor logs">
+    Check application logs for any errors:
+    
+    ```bash
+    vercel logs
+    ```
+  </Step>
+</Steps>
+
+## Database Migration Strategy
+
+### For Production Deployments
+
+1. **Always test migrations in staging first**
+2. **Backup the database before migrating:**
+   ```bash
+   pg_dump $DATABASE_URL > backup_$(date +%Y%m%d_%H%M%S).sql
+   ```
+3. **Use the direct connection for migrations:**
+   ```bash
+   DATABASE_URL="postgresql://user:pass@host:5432/db" npx prisma migrate deploy
+   ```
+4. **Verify the migration succeeded:**
+   ```bash
+   npx prisma migrate status
+   ```
+
+### Rolling Back Migrations
+
+If a migration fails, restore from backup:
+
+```bash
+psql $DATABASE_URL < backup_20250305_143022.sql
+```
+
+## Monitoring and Logging
+
+### Vercel Logs
+
+View real-time logs:
+```bash
+vercel logs --follow
+```
+
+View logs for a specific deployment:
+```bash
+vercel logs <deployment-url>
+```
+
+### Error Tracking
+
+Consider integrating error tracking services:
+
+- **Sentry** - Application error monitoring
+- **LogRocket** - Session replay and logging
+- **Datadog** - Full-stack monitoring
+
+### Health Checks
+
+Implement a health check endpoint to monitor API status:
+
+```javascript
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+```
+
+## Performance Optimization
+
+### Connection Pooling
+
+Already configured via PgBouncer in `DATABASE_URL`
+
+### Prisma Connection Pool
+
+Configure Prisma's built-in connection pool:
+
+```javascript
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
+```
+
+### Caching Strategy
+
+Consider implementing caching for frequently accessed data:
+
+- Redis for session management
+- In-memory caching for static data (especialidades)
+- CDN caching for static assets
+
+## Security Best Practices
+
+- **Use HTTPS** - Always use SSL/TLS in production
+- **Secure environment variables** - Never commit secrets to git
+- **Enable CORS properly** - Configure allowed origins
+- **Rate limiting** - Protect against abuse
+- **Database security** - Use strong passwords and SSL connections
+- **Keep dependencies updated** - Run `npm audit` regularly
+- **Rotate credentials** - Change keys and passwords periodically
+
+## Troubleshooting
+
+### Deployment fails
+
+- Check build logs for errors
+- Verify all dependencies are in `package.json`
+- Ensure Node.js version compatibility
+
+### Database connection errors
+
+- Verify `DATABASE_URL` is correct
+- Check if database allows external connections
+- Confirm connection pooling settings
+- Test with direct connection first
+
+### API returns 500 errors
+
+- Check application logs
+- Verify environment variables are set
+- Ensure migrations have been applied
+- Check Supabase configuration
+
+### Performance issues
+
+- Enable connection pooling
+- Optimize database queries
+- Add appropriate indexes
+- Monitor database connection count
+
+## Next Steps
+
+- [Monitor API performance](/guides/monitoring)
+- [Set up CI/CD pipeline](/guides/ci-cd)
+- [Configure custom domain](/guides/custom-domain)
+- [API security best practices](/guides/security)

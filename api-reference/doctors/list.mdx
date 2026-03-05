@@ -1,0 +1,159 @@
+---
+title: 'List Doctors'
+description: 'Retrieve all doctors (admin view with active and inactive)'
+---
+
+## Endpoint
+
+```
+GET /api/medicos
+```
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with an **admin** role. Include a valid JWT token in the Authorization header.
+</Warning>
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Description
+
+Retrieves all doctors in the system, including both active and inactive ones. This is the admin view that shows complete information about all doctors with their associated person and specialty details.
+
+## Response
+
+Returns an array of doctor objects with nested person and specialty information.
+
+### Response Fields
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the doctor
+</ResponseField>
+
+<ResponseField name="persona_id" type="integer">
+  Foreign key reference to the associated person
+</ResponseField>
+
+<ResponseField name="especialidad_id" type="integer">
+  Foreign key reference to the doctor's specialty
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Doctor's professional email address
+</ResponseField>
+
+<ResponseField name="colegiatura" type="string" optional>
+  Professional license or medical registration number
+</ResponseField>
+
+<ResponseField name="activo" type="boolean">
+  Indicates if the doctor is currently active in the system
+</ResponseField>
+
+<ResponseField name="persona" type="object">
+  Associated person information
+  <Expandable title="Person Object">
+    <ResponseField name="nombres" type="string">
+      Doctor's first name(s)
+    </ResponseField>
+    <ResponseField name="apellidos" type="string">
+      Doctor's last name(s)
+    </ResponseField>
+    <ResponseField name="telefono" type="string">
+      Contact phone number
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="especialidad" type="object">
+  Associated specialty information
+  <Expandable title="Specialty Object">
+    <ResponseField name="nombre" type="string">
+      Name of the medical specialty
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET "https://api.example.com/api/medicos" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## Example Response
+
+```json
+[
+  {
+    "id": 1,
+    "persona_id": 5,
+    "especialidad_id": 2,
+    "email": "dr.smith@hospital.com",
+    "colegiatura": "MED-12345",
+    "activo": true,
+    "persona": {
+      "nombres": "John",
+      "apellidos": "Smith",
+      "telefono": "+1234567890"
+    },
+    "especialidad": {
+      "nombre": "Cardiology"
+    }
+  },
+  {
+    "id": 2,
+    "persona_id": 8,
+    "especialidad_id": 1,
+    "email": "dr.jones@hospital.com",
+    "colegiatura": "MED-67890",
+    "activo": false,
+    "persona": {
+      "nombres": "Sarah",
+      "apellidos": "Jones",
+      "telefono": "+1234567891"
+    },
+    "especialidad": {
+      "nombre": "Pediatrics"
+    }
+  }
+]
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User does not have admin role
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while retrieving doctors
+  ```json
+  {
+    "message": "Error al listar médicos"
+  }
+  ```
+</ResponseField>
+
+## Notes
+
+- Unlike the public doctors endpoint (`/api/medicos/public`), this admin endpoint returns **both active and inactive** doctors
+- Results are ordered by ID in ascending order
+- The response includes full person and specialty details through relations

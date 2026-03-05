@@ -1,0 +1,123 @@
+---
+title: 'Local Development Setup'
+description: 'Complete guide to setting up the Medical Center API on your local machine'
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+- **Node.js** (v18 or higher recommended)
+- **npm** (comes with Node.js)
+- **PostgreSQL** (v14 or higher)
+- **Git** (for cloning the repository)
+
+## Installation
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the Medical Center API repository to your local machine:
+    
+    ```bash
+    git clone <repository-url>
+    cd api_centro_medico
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all required npm packages:
+    
+    ```bash
+    npm install
+    ```
+    
+    This will install:
+    - Express.js for the API server
+    - Prisma ORM for database management
+    - Supabase client for authentication
+    - Additional dependencies (cors, dotenv, jsonwebtoken)
+    
+    The `postinstall` script will automatically run `prisma generate` to create the Prisma Client.
+  </Step>
+
+  <Step title="Set up environment variables">
+    Create a `.env` file in the root directory by copying the example file:
+    
+    ```bash
+    cp .env.example .env
+    ```
+    
+    Then edit `.env` with your actual configuration values. See [Environment Variables](/guides/environment-variables) for detailed information.
+  </Step>
+
+  <Step title="Set up the database">
+    Run Prisma migrations to create the database schema:
+    
+    ```bash
+    npx prisma migrate dev
+    ```
+    
+    Optionally, seed the database with initial data:
+    
+    ```bash
+    node prisma/seed.js
+    ```
+    
+    See [Database Setup](/guides/database-setup) for more details.
+  </Step>
+
+  <Step title="Start the development server">
+    Run the API in development mode with hot-reloading:
+    
+    ```bash
+    npm run dev
+    ```
+    
+    The server will start and watch for file changes using nodemon.
+  </Step>
+</Steps>
+
+## Verify Installation
+
+Once the server is running, you can verify the installation by checking the API endpoints:
+
+```bash
+curl http://localhost:3000/api/especialidades
+```
+
+You should receive a JSON response with the list of medical specialties.
+
+## Development Scripts
+
+The following npm scripts are available:
+
+- `npm run dev` - Start the development server with hot-reloading (uses nodemon)
+- `npm start` - Start the production server
+- `npm run postinstall` - Generate Prisma Client (runs automatically after npm install)
+
+## Project Structure
+
+After setup, your project structure will look like this:
+
+```
+api_centro_medico/
+├── prisma/
+│   ├── migrations/     # Database migration files
+│   ├── schema.prisma   # Database schema definition
+│   └── seed.js         # Database seeding script
+├── src/
+│   ├── routes/         # API route handlers
+│   ├── server.js       # Express server configuration
+│   └── ...
+├── .env                # Environment variables (not in git)
+├── .env.example        # Environment variables template
+├── package.json        # Project dependencies
+└── vercel.json         # Deployment configuration
+```
+
+## Next Steps
+
+- [Configure environment variables](/guides/environment-variables)
+- [Set up the database](/guides/database-setup)
+- [Deploy to production](/guides/deployment)
+- [Explore the API endpoints](/api-reference/public/appointments)

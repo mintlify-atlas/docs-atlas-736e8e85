@@ -1,0 +1,104 @@
+---
+title: 'Get Appointments by Status'
+api: 'GET /api/dashboard/citas-por-estado'
+description: 'Retrieve appointment counts grouped by status'
+---
+
+This endpoint returns aggregated appointment counts grouped by their status. Useful for generating charts and visualizations.
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with a Bearer token.
+  
+  Only users with role `admin` or `asistente` can access this endpoint.
+</Warning>
+
+## Request Headers
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Response
+
+<ResponseField name="data" type="array">
+  Array of status count objects
+  
+  <ResponseField name="estado" type="string">
+    Appointment status (pendiente, confirmada, atendida, cancelada)
+  </ResponseField>
+  
+  <ResponseField name="total" type="number">
+    Number of appointments with this status
+  </ResponseField>
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized" type="object">
+  Returned when no valid authentication token is provided
+  
+  ```json
+  {
+    "message": "Token requerido"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden" type="object">
+  Returned when the user's role is not authorized
+  
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error citas por estado"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET https://api.example.com/api/dashboard/citas-por-estado \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>"
+```
+
+## Example Response
+
+```json
+[
+  {
+    "estado": "pendiente",
+    "total": 8
+  },
+  {
+    "estado": "confirmada",
+    "total": 15
+  },
+  {
+    "estado": "atendida",
+    "total": 143
+  },
+  {
+    "estado": "cancelada",
+    "total": 7
+  }
+]
+```
+
+## Notes
+
+- The response only includes status values that have at least one appointment
+- Perfect for pie charts or bar graphs showing appointment distribution
+- Status values are: `pendiente`, `confirmada`, `atendida`, `cancelada`

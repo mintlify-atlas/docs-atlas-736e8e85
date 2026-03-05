@@ -1,0 +1,128 @@
+---
+title: 'Delete Specialty'
+description: 'Permanently remove a medical specialty'
+---
+
+## Endpoint
+
+```
+DELETE /api/especialidades/:id
+```
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with an **admin** role. Include a valid JWT token in the Authorization header.
+</Warning>
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Description
+
+Permanently deletes a medical specialty from the system. This is a **hard delete** operation that removes the record from the database.
+
+<Warning>
+  This is a **permanent deletion**. The specialty cannot be recovered after deletion. Make sure no doctors are assigned to this specialty before attempting to delete it.
+</Warning>
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Unique identifier of the specialty to delete
+</ParamField>
+
+## Response
+
+Returns a success message confirming the deletion.
+
+### Response Fields
+
+<ResponseField name="message" type="string">
+  Confirmation message indicating successful deletion
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X DELETE "https://api.example.com/api/especialidades/4" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## Example Response
+
+```json
+{
+  "message": "Especialidad eliminada correctamente"
+}
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User does not have admin role
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="404 Not Found">
+  Specialty with the specified ID does not exist
+  ```json
+  {
+    "message": "Especialidad no encontrada"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="409 Conflict">
+  Cannot delete specialty because doctors are assigned to it
+  ```json
+  {
+    "message": "No se puede eliminar: hay médicos asignados"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while deleting specialty
+  ```json
+  {
+    "message": "Error al eliminar especialidad"
+  }
+  ```
+</ResponseField>
+
+## Foreign Key Constraint
+
+<Info>
+  **Cannot delete specialty with assigned doctors**
+  
+  If any doctors are currently assigned to this specialty, the deletion will fail with a 409 Conflict error. You must either:
+  - Reassign all doctors to different specialties using the [Update Doctor](/api-reference/doctors/update) endpoint
+  - Deactivate the doctors using the [Delete Doctor](/api-reference/doctors/delete) endpoint
+  
+  This constraint ensures data integrity and prevents orphaned doctor records.
+</Info>
+
+## Best Practices
+
+<Tip>
+  Before deleting a specialty:
+  1. Check if any doctors are assigned to it
+  2. Reassign those doctors to other specialties if needed
+  3. Consider the impact on historical appointment data
+  4. Document the reason for removing the specialty
+</Tip>

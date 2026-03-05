@@ -1,0 +1,133 @@
+---
+title: 'Create Appointment'
+api: 'POST /api/citas'
+description: 'Create a new appointment request from a public client'
+---
+
+This endpoint allows public clients to create appointment requests. It creates both a public client record and an appointment in `pendiente` (pending) status.
+
+## Authentication
+
+No authentication required - this is a public endpoint.
+
+## Request Body
+
+<ParamField body="nombres" type="string" required>
+  Client's first name(s)
+</ParamField>
+
+<ParamField body="apellidos" type="string">
+  Client's last name(s)
+</ParamField>
+
+<ParamField body="telefono" type="string" required>
+  Client's phone number
+</ParamField>
+
+<ParamField body="email" type="string">
+  Client's email address
+</ParamField>
+
+<ParamField body="fecha_solicitada" type="string" required>
+  Requested appointment date in `YYYY-MM-DD` format
+</ParamField>
+
+<ParamField body="hora_solicitada" type="string" required>
+  Requested appointment time in `HH:MM` format (24-hour)
+</ParamField>
+
+<ParamField body="sintomas" type="string">
+  Description of symptoms or reason for appointment
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">
+  Success message: "Cita registrada"
+</ResponseField>
+
+<ResponseField name="cita" type="object">
+  The created appointment object
+  
+  <ResponseField name="cita.id" type="number">
+    Appointment ID
+  </ResponseField>
+  
+  <ResponseField name="cita.cliente_id" type="number">
+    ID of the created public client
+  </ResponseField>
+  
+  <ResponseField name="cita.fecha_solicitada" type="string">
+    Requested appointment date
+  </ResponseField>
+  
+  <ResponseField name="cita.hora_solicitada" type="string">
+    Requested appointment time
+  </ResponseField>
+  
+  <ResponseField name="cita.sintomas" type="string">
+    Symptoms description
+  </ResponseField>
+  
+  <ResponseField name="cita.estado" type="string">
+    Appointment status (always "pendiente" on creation)
+  </ResponseField>
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="400 Bad Request" type="object">
+  Returned when required fields are missing
+  
+  ```json
+  {
+    "message": "Datos obligatorios incompletos"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error al registrar cita"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X POST https://api.example.com/api/citas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombres": "Juan",
+    "apellidos": "Pérez",
+    "telefono": "+502 5555-1234",
+    "email": "juan.perez@example.com",
+    "fecha_solicitada": "2026-03-15",
+    "hora_solicitada": "10:30",
+    "sintomas": "Dolor de cabeza persistente"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "message": "Cita registrada",
+  "cita": {
+    "id": 123,
+    "cliente_id": 45,
+    "fecha_solicitada": "2026-03-15T00:00:00.000Z",
+    "hora_solicitada": "1970-01-01T10:30:00.000Z",
+    "sintomas": "Dolor de cabeza persistente",
+    "estado": "pendiente",
+    "medico_id": null,
+    "fecha_confirmada": null,
+    "hora_confirmada": null,
+    "created_at": "2026-03-05T14:30:00.000Z"
+  }
+}
+```

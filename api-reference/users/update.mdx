@@ -1,0 +1,44 @@
+---
+title: 'Update User'
+openapi: 'PUT /api/usuarios/:id'
+---
+
+Updates an existing user's information, including their role and linked persona.
+
+## Authentication
+
+This endpoint requires authentication and **admin** role access.
+
+## URL Parameters
+
+- `id` (string, required): Supabase UUID of the user to update
+
+## Request Body
+
+- `persona_id` (integer, optional): Update the linked persona
+- `role` (string, optional): Update the user role
+
+All fields are optional. Only provided fields will be updated.
+
+## Key Information
+
+- The user `id` (Supabase UUID) cannot be changed
+- If a field is not provided, the existing value is preserved
+- You can unlink a persona by sending `persona_id: null`
+
+## Response
+
+Returns the updated user object:
+
+- `id` (string): Supabase UUID identifying the user
+- `persona_id` (integer, nullable): Updated persona link
+- `role` (string): Updated user role
+- `created_at` (datetime): Original creation timestamp
+
+## Error Responses
+
+- `404`: User not found
+
+## Related Endpoints
+
+For updating only the role, you can also use `PUT /api/usuarios/:id/rol`.

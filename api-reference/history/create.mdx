@@ -1,0 +1,126 @@
+---
+title: 'Create Medical History Record'
+api: 'POST /api/historial'
+description: 'Register a new medical history entry for an appointment'
+---
+
+This endpoint creates a medical history record associated with an appointment. It requires authentication and can only be accessed by administrators and assistants.
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with a Bearer token.
+  
+  Only users with role `admin` or `asistente` can access this endpoint.
+</Warning>
+
+## Request Headers
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Request Body
+
+<ParamField body="cita_id" type="number" required>
+  ID of the appointment to associate with this history record
+</ParamField>
+
+<ParamField body="notas" type="string">
+  Medical notes or observations for the appointment
+</ParamField>
+
+## Response
+
+<ResponseField name="historial" type="object">
+  The created medical history record
+  
+  <ResponseField name="historial.id" type="number">
+    History record ID
+  </ResponseField>
+  
+  <ResponseField name="historial.cita_id" type="number">
+    Associated appointment ID
+  </ResponseField>
+  
+  <ResponseField name="historial.notas" type="string">
+    Medical notes (or null if not provided)
+  </ResponseField>
+  
+  <ResponseField name="historial.created_at" type="string">
+    Creation timestamp
+  </ResponseField>
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="400 Bad Request" type="object">
+  Returned when cita_id is missing
+  
+  ```json
+  {
+    "message": "cita_id es obligatorio"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="401 Unauthorized" type="object">
+  Returned when no valid authentication token is provided
+  
+  ```json
+  {
+    "message": "Token requerido"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden" type="object">
+  Returned when the user's role is not authorized
+  
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error al crear historial"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X POST https://api.example.com/api/historial \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "cita_id": 123,
+    "notas": "Paciente presenta mejoría después del tratamiento. Se recomienda seguimiento en 2 semanas."
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "historial": {
+    "id": 56,
+    "cita_id": 123,
+    "notas": "Paciente presenta mejoría después del tratamiento. Se recomienda seguimiento en 2 semanas.",
+    "created_at": "2026-03-05T16:30:00.000Z"
+  }
+}
+```
+
+## Notes
+
+- The `cita_id` should reference an existing appointment in the system
+- The `notas` field is optional and can be null
+- Records are automatically timestamped on creation

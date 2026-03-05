@@ -1,0 +1,101 @@
+---
+title: 'Get Dashboard Statistics'
+api: 'GET /api/dashboard/stats'
+description: 'Retrieve general dashboard statistics including appointment counts by status'
+---
+
+This endpoint provides an overview of key metrics for the medical center dashboard, including the number of appointments today and counts by status.
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with a Bearer token.
+  
+  Only users with role `admin` or `asistente` can access this endpoint.
+</Warning>
+
+## Request Headers
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Response
+
+<ResponseField name="citasHoy" type="number">
+  Number of appointments scheduled for today
+</ResponseField>
+
+<ResponseField name="pendientes" type="number">
+  Total number of pending appointments
+</ResponseField>
+
+<ResponseField name="confirmadas" type="number">
+  Total number of confirmed appointments
+</ResponseField>
+
+<ResponseField name="atendidas" type="number">
+  Total number of completed appointments
+</ResponseField>
+
+<ResponseField name="canceladas" type="number">
+  Total number of cancelled appointments
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized" type="object">
+  Returned when no valid authentication token is provided
+  
+  ```json
+  {
+    "message": "Token requerido"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden" type="object">
+  Returned when the user's role is not authorized
+  
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error dashboard stats"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET https://api.example.com/api/dashboard/stats \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>"
+```
+
+## Example Response
+
+```json
+{
+  "citasHoy": 12,
+  "pendientes": 8,
+  "confirmadas": 15,
+  "atendidas": 143,
+  "canceladas": 7
+}
+```
+
+## Notes
+
+- "Today" is calculated based on the server's timezone, from 00:00:00 to 23:59:59
+- All status counts are cumulative across all time periods, not just today
+- This endpoint is optimized with parallel database queries for better performance

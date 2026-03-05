@@ -1,0 +1,66 @@
+---
+title: 'Delete Contact Message'
+api: 'DELETE /api/contacto/:id'
+description: 'Delete a contact message from the system'
+---
+
+This endpoint permanently deletes a contact message from the database.
+
+## Authentication
+
+No authentication required based on the source code.
+
+## Path Parameters
+
+<ParamField path="id" type="number" required>
+  The ID of the contact message to delete
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">
+  Success message: "Mensaje eliminado correctamente"
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="400 Bad Request" type="object">
+  Returned when the ID parameter is invalid
+  
+  ```json
+  {
+    "message": "ID inválido"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs (including if message doesn't exist)
+  
+  ```json
+  {
+    "message": "Error al eliminar mensaje"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X DELETE https://api.example.com/api/contacto/78 \
+  -H "Content-Type: application/json"
+```
+
+## Example Response
+
+```json
+{
+  "message": "Mensaje eliminado correctamente"
+}
+```
+
+## Notes
+
+- This operation is permanent and cannot be undone
+- If the message doesn't exist, a 500 error will be returned
+- The ID must be a valid integer

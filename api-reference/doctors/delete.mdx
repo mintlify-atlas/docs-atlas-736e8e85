@@ -1,0 +1,117 @@
+---
+title: 'Delete Doctor'
+description: 'Soft delete a doctor by deactivating them'
+---
+
+## Endpoint
+
+```
+DELETE /api/medicos/:id
+```
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with an **admin** role. Include a valid JWT token in the Authorization header.
+</Warning>
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Description
+
+Soft deletes a doctor by setting their `activo` status to `false`. This is not a permanent deletion - the doctor record remains in the database but is marked as inactive.
+
+<Info>
+  This is a **soft delete** operation. The doctor record is preserved in the database but marked as inactive. This allows maintaining historical data and relationships while removing the doctor from active use.
+</Info>
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Unique identifier of the doctor to deactivate
+</ParamField>
+
+## Response
+
+Returns a success message confirming the deactivation.
+
+### Response Fields
+
+<ResponseField name="message" type="string">
+  Confirmation message indicating successful deactivation
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X DELETE "https://api.example.com/api/medicos/3" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## Example Response
+
+```json
+{
+  "message": "Médico desactivado correctamente"
+}
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User does not have admin role
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="404 Not Found">
+  Doctor with the specified ID does not exist
+  ```json
+  {
+    "message": "Médico no encontrado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while deactivating doctor
+  ```json
+  {
+    "message": "Error al eliminar médico"
+  }
+  ```
+</ResponseField>
+
+## Reactivation
+
+<Tip>
+  To reactivate a deactivated doctor, use the [Update Doctor](/api-reference/doctors/update) endpoint and set `activo` to `true`:
+  
+  ```bash
+  curl -X PUT "https://api.example.com/api/medicos/3" \
+    -H "Authorization: Bearer YOUR_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"activo": true}'
+  ```
+</Tip>
+
+## Notes
+
+- Deactivated doctors will not appear in the public doctors list (`/api/medicos/public`)
+- Deactivated doctors are still visible in the admin list (`/api/medicos`)
+- All historical data and relationships are preserved
+- The associated person record remains unchanged

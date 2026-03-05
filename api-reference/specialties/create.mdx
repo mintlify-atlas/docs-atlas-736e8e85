@@ -1,0 +1,129 @@
+---
+title: 'Create Specialty'
+description: 'Add a new medical specialty to the system'
+---
+
+## Endpoint
+
+```
+POST /api/especialidades
+```
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with an **admin** role. Include a valid JWT token in the Authorization header.
+</Warning>
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Description
+
+Creates a new medical specialty in the system. Specialties are used to categorize doctors and help patients find the right medical professional for their needs.
+
+## Request Body
+
+<ParamField body="nombre" type="string" required>
+  Name of the medical specialty. Must be unique.
+</ParamField>
+
+<ParamField body="descripcion" type="string" optional>
+  Description of what the specialty covers or treats
+</ParamField>
+
+## Response
+
+Returns the newly created specialty object.
+
+### Response Fields
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the newly created specialty
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Name of the specialty
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description of the specialty (null if not provided)
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X POST "https://api.example.com/api/especialidades" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Neurology",
+    "descripcion": "Medical specialty dealing with disorders of the nervous system"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "id": 4,
+  "nombre": "Neurology",
+  "descripcion": "Medical specialty dealing with disorders of the nervous system"
+}
+```
+
+## Error Responses
+
+<ResponseField name="400 Bad Request">
+  Missing required field
+  ```json
+  {
+    "message": "El nombre es obligatorio"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User does not have admin role
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="409 Conflict">
+  Specialty name already exists
+  ```json
+  {
+    "message": "La especialidad ya existe"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while creating specialty
+  ```json
+  {
+    "message": "Error al crear especialidad"
+  }
+  ```
+</ResponseField>
+
+## Notes
+
+<Info>
+  - The specialty name must be unique across the system
+  - The description field is optional but recommended for better user understanding
+  - Once created, the specialty can be assigned to doctors
+</Info>

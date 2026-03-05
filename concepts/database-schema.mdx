@@ -1,0 +1,295 @@
+---
+title: 'Database Schema'
+description: 'Complete overview of the Medical Center API database structure, models, and relationships'
+---
+
+## Overview
+
+The Medical Center API uses PostgreSQL with Prisma ORM. The database architecture implements a **two-tier user system** that separates internal staff (authenticated via Supabase) from public clients (unauthenticated).
+
+## Core Models
+
+### Personas (Internal Personnel)
+
+Stores personal information for all internal staff members including admins, assistants, and doctors.
+
+```prisma
+model Personas {
+  id         Int      @id @default(autoincrement())
+  nombres    String
+  apellidos  String
+  telefono   String?
+  dni        String?  @unique
+  foto_url   String? 
+  created_at DateTime @default(now())
+
+  usuario Usuarios?
+  medico  Medicos?
+
+  @@map("personas")
+}
+```
+
+<Info>
+  The `Personas` model serves as the base table for all internal system users. A persona can be linked to either a `Usuarios` record (for authentication) or a `Medicos` record (for doctor-specific data).
+</Info>
+
+### Usuarios (Authenticated Internal Users)
+
+Links Supabase authentication to internal personnel with role-based access control.
+
+```prisma
+model Usuarios {
+  id         String   @id               // UUID from Supabase Auth
+  persona_id Int      @unique
+  role       rol_usuario
+  created_at DateTime @default(now())
+
+  persona Personas @relation(fields: [persona_id], references: [id], onDelete: Cascade)
+
+  @@map("usuarios")
+}
+```
+
+<ResponseField name="id" type="String" required>
+  UUID string from Supabase Auth, not auto-generated
+</ResponseField>
+
+<ResponseField name="persona_id" type="Int" required>
+  Foreign key to Personas table (unique - one user per persona)
+</ResponseField>
+
+<ResponseField name="role" type="rol_usuario" required>
+  Enum: `admin` or `asistente`
+</ResponseField>
+
+### Clientes_publicos (Public Clients)
+
+UnAuthenticated users who request appointments through the public API.
+
+```prisma
+model Clientes_publicos {
+  id         Int      @id @default(autoincrement())
+  nombres    String
+  apellidos  String?
+  telefono   String?
+  email      String?
+  created_at DateTime @default(now())
+
+  citas     Citas[]
+  contactos Contacto[]
+
+  @@map("clientes_publicos")
+}
+```
+
+<Warning>
+  Public clients are **NOT authenticated**. They are created on-the-fly when submitting appointment requests. Each appointment creates a new client record.
+</Warning>
+
+### Medicos (Doctors)
+
+Doctor profiles linked to personas with specialty information.
+
+```prisma
+model Medicos {
+  id              Int      @id @default(autoincrement())
+  persona_id      Int      @unique
+  especialidad_id Int
+  email           String   @unique
+  colegiatura     String?
+  activo          Boolean  @default(true)
+  created_at      DateTime @default(now())
+
+  persona      Personas       @relation(fields: [persona_id], references: [id], onDelete: Cascade)
+  especialidad Especialidades @relation(fields: [especialidad_id], references: [id])
+  citas        Citas[]
+
+  @@map("medicos")
+}
+```
+
+<Note>
+  Doctors **do not authenticate** directly. They are managed by admins and linked to personas, but they don't have login credentials.
+</Note>
+
+### Especialidades (Medical Specialties)
+
+```prisma
+model Especialidades {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique
+  descripcion String?
+  created_at  DateTime @default(now())
+
+  medicos Medicos[]
+
+  @@map("especialidades")
+}
+```
+
+### Citas (Appointments)
+
+Tracks the complete appointment lifecycle from public request to final status.
+
+```prisma
+model Citas {
+  id                  Int         @id @default(autoincrement())
+  cliente_id          Int
+
+  // Public user request data
+  fecha_solicitada    DateTime    @db.Date
+  hora_solicitada     DateTime    @db.Time
+
+  // Assistant confirmation data
+  fecha_confirmada    DateTime?   @db.Date
+  hora_confirmada     DateTime?   @db.Time
+
+  medico_id           Int?
+  sintomas            String?
+  estado              estado_cita @default(pendiente)
+  created_at          DateTime    @default(now())
+
+  cliente Clientes_publicos @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+  medico  Medicos?          @relation(fields: [medico_id], references: [id])
+  historial Historial[]
+
+  @@map("citas")
+}
+```
+
+<Accordion title="Understanding Appointment Dates">
+  - **fecha_solicitada / hora_solicitada**: The date/time requested by the public client
+  - **fecha_confirmada / hora_confirmada**: The actual date/time assigned by the assistant when confirming
+  - These can differ - the assistant may reschedule based on doctor availability
+</Accordion>
+
+### Contacto (Contact Requests)
+
+```prisma
+model Contacto {
+  id         Int      @id @default(autoincrement())
+  cliente_id Int
+  asunto     String
+  mensaje    String
+  created_at DateTime @default(now())
+
+  cliente Clientes_publicos @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+
+  @@map("contacto")
+}
+```
+
+### Historial (Medical History)
+
+Internal notes for attended appointments.
+
+```prisma
+model Historial {
+  id         Int      @id @default(autoincrement())
+  cita_id    Int
+  notas      String?
+  created_at DateTime @default(now())
+
+  cita Citas @relation(fields: [cita_id], references: [id], onDelete: Cascade)
+
+  @@map("historial")
+}
+```
+
+## Enums
+
+### rol_usuario
+
+Defines the two internal user roles:
+
+```prisma
+enum rol_usuario {
+  admin
+  asistente
+}
+```
+
+<ResponseField name="admin" type="enum">
+  Full system access: manage users, doctors, appointments, and all resources
+</ResponseField>
+
+<ResponseField name="asistente" type="enum">
+  Limited access: manage appointments and view doctors (read-only for users)
+</ResponseField>
+
+### estado_cita
+
+Tracks the appointment status throughout its lifecycle:
+
+```prisma
+enum estado_cita {
+  pendiente
+  confirmada
+  cancelada
+  atendida
+}
+```
+
+<ResponseField name="pendiente" type="enum">
+  Initial state when a public client submits an appointment request
+</ResponseField>
+
+<ResponseField name="confirmada" type="enum">
+  Assistant has assigned a doctor and confirmed the date/time
+</ResponseField>
+
+<ResponseField name="cancelada" type="enum">
+  Appointment was cancelled (doctor assignment is removed)
+</ResponseField>
+
+<ResponseField name="atendida" type="enum">
+  Appointment was completed (can only transition from `confirmada`)
+</ResponseField>
+
+## Relationships
+
+### Internal Staff Hierarchy
+
+```
+Personas (1) ──→ (0..1) Usuarios    [Authentication]
+         (1) ──→ (0..1) Medicos     [Doctor profile]
+```
+
+<Info>
+  A persona can be either a Usuario (admin/assistant) OR a Medico (doctor), but not both. Doctors don't authenticate.
+</Info>
+
+### Appointment Flow
+
+```
+Clientes_publicos (1) ──→ (N) Citas
+Citas (N) ──→ (0..1) Medicos
+Citas (1) ──→ (N) Historial
+```
+
+### Specialties
+
+```
+Especialidades (1) ──→ (N) Medicos
+```
+
+## Cascade Delete Behavior
+
+<Warning>
+  The following deletions cascade automatically:
+  - Deleting a `Personas` record deletes linked `Usuarios` and `Medicos`
+  - Deleting a `Clientes_publicos` record deletes all their `Citas` and `Contacto` records
+  - Deleting a `Citas` record deletes all linked `Historial` entries
+</Warning>
+
+## Database Provider
+
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+```
+
+The schema uses PostgreSQL with environment-based connection configuration.

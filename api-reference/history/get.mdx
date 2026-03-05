@@ -1,0 +1,191 @@
+---
+title: 'List Medical History'
+api: 'GET /api/historial'
+description: 'Retrieve all medical history records with appointment and patient details'
+---
+
+This endpoint retrieves all medical history records in the system, including detailed information about the associated appointment, client, and assigned doctor. Records are ordered by creation date (newest first).
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with a Bearer token.
+  
+  Only users with role `admin` or `asistente` can access this endpoint.
+</Warning>
+
+## Request Headers
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Response
+
+<ResponseField name="historial" type="array">
+  Array of medical history record objects
+  
+  <ResponseField name="id" type="number">
+    History record ID
+  </ResponseField>
+  
+  <ResponseField name="cita_id" type="number">
+    Associated appointment ID
+  </ResponseField>
+  
+  <ResponseField name="notas" type="string">
+    Medical notes or observations
+  </ResponseField>
+  
+  <ResponseField name="created_at" type="string">
+    Record creation timestamp
+  </ResponseField>
+  
+  <ResponseField name="cita" type="object">
+    Associated appointment information
+    
+    <ResponseField name="cita.id" type="number">
+      Appointment ID
+    </ResponseField>
+    
+    <ResponseField name="cita.fecha_solicitada" type="string">
+      Requested appointment date
+    </ResponseField>
+    
+    <ResponseField name="cita.hora_solicitada" type="string">
+      Requested appointment time
+    </ResponseField>
+    
+    <ResponseField name="cita.estado" type="string">
+      Appointment status (pendiente, confirmada, atendida, cancelada)
+    </ResponseField>
+    
+    <ResponseField name="cita.sintomas" type="string">
+      Patient symptoms or reason for visit
+    </ResponseField>
+    
+    <ResponseField name="cita.cliente" type="object">
+      Patient/client information
+      
+      <ResponseField name="cliente.id" type="number">
+        Client ID
+      </ResponseField>
+      
+      <ResponseField name="cliente.nombres" type="string">
+        Client's first name(s)
+      </ResponseField>
+      
+      <ResponseField name="cliente.apellidos" type="string">
+        Client's last name(s)
+      </ResponseField>
+      
+      <ResponseField name="cliente.telefono" type="string">
+        Client's phone number
+      </ResponseField>
+      
+      <ResponseField name="cliente.email" type="string">
+        Client's email address
+      </ResponseField>
+    </ResponseField>
+    
+    <ResponseField name="cita.medico" type="object">
+      Assigned doctor information (if assigned)
+      
+      <ResponseField name="medico.id" type="number">
+        Doctor ID
+      </ResponseField>
+      
+      <ResponseField name="medico.persona" type="object">
+        Doctor's personal information
+        
+        <ResponseField name="persona.nombres" type="string">
+          Doctor's first name(s)
+        </ResponseField>
+        
+        <ResponseField name="persona.apellidos" type="string">
+          Doctor's last name(s)
+        </ResponseField>
+      </ResponseField>
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized" type="object">
+  Returned when no valid authentication token is provided
+  
+  ```json
+  {
+    "message": "Token requerido"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden" type="object">
+  Returned when the user's role is not authorized
+  
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error al listar historial"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET https://api.example.com/api/historial \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>"
+```
+
+## Example Response
+
+```json
+[
+  {
+    "id": 56,
+    "cita_id": 123,
+    "notas": "Paciente presenta mejoría después del tratamiento. Se recomienda seguimiento en 2 semanas.",
+    "created_at": "2026-03-05T16:30:00.000Z",
+    "cita": {
+      "id": 123,
+      "fecha_solicitada": "2026-03-15T00:00:00.000Z",
+      "hora_solicitada": "1970-01-01T10:30:00.000Z",
+      "estado": "atendida",
+      "sintomas": "Dolor de cabeza persistente",
+      "cliente": {
+        "id": 45,
+        "nombres": "Juan",
+        "apellidos": "Pérez",
+        "telefono": "+502 5555-1234",
+        "email": "juan.perez@example.com"
+      },
+      "medico": {
+        "id": 10,
+        "persona": {
+          "nombres": "Dr. Carlos",
+          "apellidos": "Ramírez"
+        }
+      }
+    }
+  }
+]
+```
+
+## Notes
+
+- Records are ordered by `created_at` in descending order (newest first)
+- The response includes complete appointment details with nested client and doctor information
+- This endpoint is useful for reviewing patient medical history and appointment outcomes

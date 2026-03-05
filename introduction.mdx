@@ -1,0 +1,96 @@
+---
+title: Introduction
+description: Welcome to the Medical Center API - A comprehensive solution for managing medical appointments, doctors, and patient records
+---
+
+## Overview
+
+The Medical Center API is a RESTful API built to manage medical appointments, doctor schedules, patient information, and administrative tasks for healthcare facilities. It provides a complete backend solution for medical centers to streamline their operations.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Appointment Management" icon="calendar-check">
+    Create, confirm, and track patient appointments with real-time status updates
+  </Card>
+  <Card title="Doctor Management" icon="user-doctor">
+    Manage doctor profiles, specialties, and availability
+  </Card>
+  <Card title="Role-Based Access" icon="shield-halved">
+    Secure authentication with admin and assistant roles
+  </Card>
+  <Card title="Public Endpoints" icon="globe">
+    Allow patients to book appointments without authentication
+  </Card>
+</CardGroup>
+
+## Use Cases
+
+### For Medical Centers
+- **Appointment Scheduling**: Patients can request appointments through a public endpoint, and staff can confirm and assign doctors
+- **Staff Management**: Administrators can manage doctors, specialties, and internal staff with role-based permissions
+- **Patient Records**: Track appointment history and patient interactions
+
+### For Developers
+- **Easy Integration**: RESTful API with JSON responses
+- **Secure Authentication**: Supabase JWT-based authentication
+- **Scalable Architecture**: Built on modern technologies for reliability
+
+## Architecture
+
+The Medical Center API is built with a modern, scalable stack:
+
+<Steps>
+  <Step title="Node.js & Express.js">
+    Fast and lightweight web framework for handling HTTP requests
+  </Step>
+  
+  <Step title="Prisma ORM">
+    Type-safe database access with automated migrations and schema management
+  </Step>
+  
+  <Step title="PostgreSQL">
+    Robust relational database for storing medical records and appointments
+  </Step>
+  
+  <Step title="Supabase Authentication">
+    Secure JWT-based authentication for admin and assistant users
+  </Step>
+</Steps>
+
+## Core Entities
+
+The API manages the following core entities:
+
+- **Personas**: Internal staff members (admins, assistants, doctors)
+- **Usuarios**: Authenticated users with role-based access (admin, asistente)
+- **Clientes Públicos**: Public patients who request appointments
+- **Médicos**: Doctors with specialties and credentials
+- **Especialidades**: Medical specialties (Cardiology, Pediatrics, etc.)
+- **Citas**: Appointment requests and confirmations
+- **Historial**: Medical history and notes for completed appointments
+
+## API Endpoints
+
+The API is organized into the following endpoint groups:
+
+- `/api/personas` - Manage internal staff
+- `/api/usuarios` - User management
+- `/api/medicos` - Doctor management (public and admin)
+- `/api/especialidades` - Medical specialties
+- `/api/citas` - Appointment management
+- `/api/historial` - Medical history
+- `/api/contacto` - Contact messages from patients
+- `/api/admin-auth` - Administrative authentication
+- `/api/dashboard` - Dashboard statistics
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get up and running with the API in minutes
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Learn how to authenticate and secure your requests
+  </Card>
+</CardGroup>

@@ -1,0 +1,44 @@
+---
+title: 'Update Person'
+openapi: 'PUT /api/personas/:id'
+---
+
+Updates an existing person's (persona) information.
+
+## Authentication
+
+This endpoint requires authentication and **admin** role access.
+
+## URL Parameters
+
+- `id` (integer, required): The persona ID to update
+
+## Request Body
+
+Send any persona fields you want to update. All fields are optional.
+
+Common fields include:
+- `dni` (string): Document identification number
+- `nombre` (string): First name
+- `apellido` (string): Last name
+- Additional personal information fields
+
+## Response
+
+Returns the updated persona object with a success message:
+
+```json
+{
+  "message": "Persona actualizada",
+  "persona": { /* updated persona object */ }
+}
+```
+
+## Profile Updates
+
+Staff members (admin and asistente roles) can update their own persona information using the `PUT /api/personas/me` endpoint, which automatically determines the persona to update based on the authenticated user.
+
+## Related Endpoints
+
+- `PUT /api/personas/me` - Update your own profile (admin/asistente)
+- `PUT /api/personas/:id/foto` - Update profile photo (admin/asistente)

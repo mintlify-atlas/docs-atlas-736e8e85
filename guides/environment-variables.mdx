@@ -1,0 +1,175 @@
+---
+title: 'Environment Variables'
+description: 'Configure your Medical Center API with the required environment variables'
+---
+
+## Overview
+
+The Medical Center API requires several environment variables to function properly. These variables configure database connections, Supabase authentication, and other critical services.
+
+## Required Variables
+
+Create a `.env` file in the root directory of your project with the following variables:
+
+### DATABASE_URL
+
+The PostgreSQL database connection string. The format differs depending on whether you're running migrations or using the application in production.
+
+<CodeGroup>
+```bash Development (Migrations)
+# Direct connection for running migrations
+DATABASE_URL="postgresql://postgres:password@localhost:5432/medical_center"
+```
+
+```bash Production (PgBouncer)
+# Connection pooling for production
+DATABASE_URL="postgresql://user:password@host:6543/postgres?pgbouncer=true"
+```
+</CodeGroup>
+
+**Purpose:** Connects the API to your PostgreSQL database using Prisma ORM.
+
+**Format:** `postgresql://USER:PASSWORD@HOST:PORT/DATABASE[?options]`
+
+**Important notes:**
+- For **migrations**, use port `5432` (direct PostgreSQL connection)
+- For **production**, use port `6543` with `?pgbouncer=true` for connection pooling
+- Never commit your actual database credentials to version control
+
+### SUPABASE_URL
+
+The URL of your Supabase project.
+
+```bash
+SUPABASE_URL="https://your-project.supabase.co"
+```
+
+**Purpose:** Base URL for Supabase API requests and authentication services.
+
+**How to find it:** 
+1. Go to your Supabase project dashboard
+2. Navigate to Settings → API
+3. Copy the "Project URL"
+
+### SUPABASE_ANON_KEY
+
+The anonymous (public) key for Supabase.
+
+```bash
+SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Purpose:** Public API key for client-side authentication and public operations.
+
+**Security:** This key is safe to use in client applications as it has limited permissions.
+
+**How to find it:**
+1. Go to your Supabase project dashboard
+2. Navigate to Settings → API
+3. Copy the "anon public" key
+
+### SUPABASE_SERVICE_ROLE_KEY
+
+The service role key for Supabase with elevated permissions.
+
+```bash
+SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Purpose:** Server-side API key with full access for administrative operations.
+
+**Security:** ⚠️ **Keep this key secret!** Never expose it in client-side code or commit it to version control.
+
+**How to find it:**
+1. Go to your Supabase project dashboard
+2. Navigate to Settings → API
+3. Copy the "service_role secret" key
+
+## Complete Example
+
+Here's a complete `.env` file template:
+
+```bash
+# Database Configuration
+# For migrations (development)
+DATABASE_URL="postgresql://postgres:your_password@localhost:5432/medical_center"
+
+# For production with connection pooling
+# DATABASE_URL="postgresql://user:password@db.example.com:6543/postgres?pgbouncer=true"
+
+# Supabase Configuration
+SUPABASE_URL="https://your-project-id.supabase.co"
+SUPABASE_ANON_KEY="your_anon_key_here"
+SUPABASE_SERVICE_ROLE_KEY="your_service_role_key_here"
+```
+
+## Environment-Specific Configuration
+
+<CodeGroup>
+```bash Development
+# Local PostgreSQL
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/medical_center_dev"
+
+# Supabase development project
+SUPABASE_URL="https://dev-project.supabase.co"
+SUPABASE_ANON_KEY="dev_anon_key"
+SUPABASE_SERVICE_ROLE_KEY="dev_service_role_key"
+```
+
+```bash Production
+# Production database with PgBouncer
+DATABASE_URL="postgresql://prod_user:secure_password@db.prod.com:6543/postgres?pgbouncer=true"
+
+# Supabase production project
+SUPABASE_URL="https://prod-project.supabase.co"
+SUPABASE_ANON_KEY="prod_anon_key"
+SUPABASE_SERVICE_ROLE_KEY="prod_service_role_key"
+```
+</CodeGroup>
+
+## Security Best Practices
+
+<Warning>
+Never commit your `.env` file to version control. The `.gitignore` file already excludes it.
+</Warning>
+
+- Store production credentials in your deployment platform's environment variable settings
+- Use different Supabase projects for development and production
+- Rotate keys regularly, especially if they may have been exposed
+- Use strong, unique passwords for database connections
+- Enable SSL for production database connections
+
+## Verifying Configuration
+
+After setting up your environment variables, verify they're loaded correctly:
+
+```javascript
+import 'dotenv/config';
+
+console.log('Database:', process.env.DATABASE_URL ? '✓ Configured' : '✗ Missing');
+console.log('Supabase URL:', process.env.SUPABASE_URL ? '✓ Configured' : '✗ Missing');
+console.log('Supabase Anon Key:', process.env.SUPABASE_ANON_KEY ? '✓ Configured' : '✗ Missing');
+console.log('Supabase Service Key:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✓ Configured' : '✗ Missing');
+```
+
+## Troubleshooting
+
+### Database connection fails
+
+- Verify PostgreSQL is running: `pg_isready`
+- Check the connection string format
+- Ensure the database exists: `createdb medical_center`
+- Verify firewall rules allow the connection
+
+### Supabase authentication fails
+
+- Verify your Supabase project is active
+- Check that the keys match your project dashboard
+- Ensure the `SUPABASE_URL` doesn't have a trailing slash
+- Try regenerating the keys if they're not working
+
+## Next Steps
+
+- [Set up the database schema](/guides/database-setup)
+- [Deploy to production](/guides/deployment)
+- [Configure authentication](/api-reference/authentication)

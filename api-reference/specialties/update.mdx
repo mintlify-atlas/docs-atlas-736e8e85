@@ -1,0 +1,135 @@
+---
+title: 'Update Specialty'
+description: 'Update medical specialty information'
+---
+
+## Endpoint
+
+```
+PUT /api/especialidades/:id
+```
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with an **admin** role. Include a valid JWT token in the Authorization header.
+</Warning>
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Description
+
+Updates the information of an existing medical specialty. You can modify the name and description of the specialty.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Unique identifier of the specialty to update
+</ParamField>
+
+## Request Body
+
+<ParamField body="nombre" type="string" required>
+  Name of the medical specialty
+</ParamField>
+
+<ParamField body="descripcion" type="string" optional>
+  Description of what the specialty covers or treats
+</ParamField>
+
+## Response
+
+Returns the updated specialty object.
+
+### Response Fields
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the specialty
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Updated name of the specialty
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Updated description of the specialty
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X PUT "https://api.example.com/api/especialidades/4" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Neurology",
+    "descripcion": "Medical specialty dealing with disorders of the nervous system and brain"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "id": 4,
+  "nombre": "Neurology",
+  "descripcion": "Medical specialty dealing with disorders of the nervous system and brain"
+}
+```
+
+## Error Responses
+
+<ResponseField name="400 Bad Request">
+  Missing required field
+  ```json
+  {
+    "message": "El nombre es obligatorio"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User does not have admin role
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="404 Not Found">
+  Specialty with the specified ID does not exist
+  ```json
+  {
+    "message": "Especialidad no encontrada"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while updating specialty
+  ```json
+  {
+    "message": "Error al actualizar especialidad"
+  }
+  ```
+</ResponseField>
+
+## Notes
+
+<Info>
+  - The `nombre` field is required even when updating
+  - Updating a specialty will affect all doctors assigned to it
+  - The updated specialty information will be immediately visible to public users
+</Info>

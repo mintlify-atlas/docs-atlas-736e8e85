@@ -1,0 +1,391 @@
+---
+title: Authentication
+description: Learn how to authenticate with the Medical Center API using Supabase JWT tokens
+---
+
+## Overview
+
+The Medical Center API uses **Supabase JWT (JSON Web Token)** authentication to secure admin and assistant endpoints. Public endpoints like appointment creation and viewing specialties don't require authentication.
+
+## Authentication Architecture
+
+The API implements a two-tier authentication system:
+
+1. **Supabase Auth**: Handles user authentication and JWT token generation
+2. **Internal User Management**: Maps Supabase users to internal roles (admin/assistant)
+
+### How It Works
+
+<Steps>
+  <Step title="User Signs In">
+    User authenticates with Supabase using email and password
+  </Step>
+  
+  <Step title="JWT Token Issued">
+    Supabase returns a JWT access token containing the user's unique ID (UUID)
+  </Step>
+  
+  <Step title="Token Validation">
+    The API middleware decodes the JWT and validates the user in the internal database
+  </Step>
+  
+  <Step title="Role-Based Access">
+    The user's role (admin/asistente) determines which endpoints they can access
+  </Step>
+</Steps>
+
+## User Roles
+
+The API supports two user roles:
+
+| Role | Permissions | Use Case |
+|------|-------------|----------|
+| **admin** | Full access to all endpoints including user creation, doctor management, and appointment operations | System administrators |
+| **asistente** | Can manage appointments, view doctors, and access patient records | Front desk staff |
+
+## Authentication Middleware
+
+The API uses middleware to protect endpoints. Here's how it works under the hood:
+
+```javascript src/middleware/auth.middleware.js
+import jwt from "jsonwebtoken";
+import prisma from "../prisma.js";
+
+export async function authMiddleware(req, res, next) {
+  const auth = req.headers.authorization;
+
+  if (!auth || !auth.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Token requerido" });
+  }
+
+  const token = auth.replace("Bearer ", "");
+
+  try {
+    // Decode the JWT (Supabase already validated it)
+    const payload = jwt.decode(token);
+
+    if (!payload || !payload.sub) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+
+    // Look up internal user
+    const usuario = await prisma.usuarios.findUnique({
+      where: { id: payload.sub },
+    });
+
+    if (!usuario) {
+      return res.status(403).json({ message: "Usuario no autorizado" });
+    }
+
+    req.user = usuario; // { id, persona_id, role }
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Error de autenticación" });
+  }
+}
+```
+
+### Role Middleware
+
+After authentication, endpoints can require specific roles:
+
+```javascript src/middleware/role.middleware.js
+export function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Acceso denegado" });
+    }
+    next();
+  };
+}
+```
+
+## Getting Started with Authentication
+
+### Step 1: Sign In to Supabase
+
+Authenticate with Supabase to obtain a JWT token:
+
+<CodeGroup>
+```javascript JavaScript
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  'https://your-project.supabase.co',
+  'your-anon-key'
+)
+
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'admin@example.com',
+  password: 'secure-password'
+})
+
+if (data.session) {
+  const accessToken = data.session.access_token
+  console.log('Access Token:', accessToken)
+}
+```
+
+```python Python
+from supabase import create_client, Client
+
+supabase: Client = create_client(
+    "https://your-project.supabase.co",
+    "your-anon-key"
+)
+
+response = supabase.auth.sign_in_with_password({
+    "email": "admin@example.com",
+    "password": "secure-password"
+})
+
+access_token = response.session.access_token
+print(f"Access Token: {access_token}")
+```
+
+```bash cURL
+curl -X POST 'https://your-project.supabase.co/auth/v1/token?grant_type=password' \
+  -H "apikey: your-anon-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@example.com",
+    "password": "secure-password"
+  }'
+```
+</CodeGroup>
+
+**Response:**
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "expires_in": 3600,
+  "refresh_token": "...",
+  "user": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "email": "admin@example.com",
+    ...
+  }
+}
+```
+
+### Step 2: Make Authenticated Requests
+
+Use the access token in the `Authorization` header:
+
+<CodeGroup>
+```bash cURL
+curl http://localhost:3000/api/citas \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+```javascript JavaScript
+const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+
+fetch('http://localhost:3000/api/citas', {
+  headers: {
+    'Authorization': `Bearer ${accessToken}`
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data))
+```
+
+```python Python
+import requests
+
+access_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+
+response = requests.get(
+    'http://localhost:3000/api/citas',
+    headers={'Authorization': f'Bearer {access_token}'}
+)
+
+print(response.json())
+```
+</CodeGroup>
+
+## Creating Admin Users
+
+Only admins can create new authenticated users. The process involves two steps:
+
+1. Create a Supabase auth user
+2. Create an internal user record with role assignment
+
+### Create Supabase Auth User (Admin Only)
+
+```bash
+POST /api/admin-auth/crear-auth
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{
+  "email": "nuevo@example.com",
+  "password": "secure-password"
+}
+```
+
+**Example:**
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://localhost:3000/api/admin-auth/crear-auth \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "asistente@example.com",
+    "password": "password123"
+  }'
+```
+
+```javascript JavaScript
+fetch('http://localhost:3000/api/admin-auth/crear-auth', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${adminToken}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    email: 'asistente@example.com',
+    password: 'password123'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data))
+```
+</CodeGroup>
+
+**Response:**
+
+```json
+{
+  "auth_user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}
+```
+
+<Note>
+  The `auth_user_id` returned is the UUID you'll use when creating the internal user record.
+</Note>
+
+### Create Internal User Record
+
+After creating the Supabase auth user, create the internal user with role assignment:
+
+```bash
+POST /api/usuarios
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "persona_id": 5,
+  "role": "asistente"
+}
+```
+
+## Protected Endpoint Examples
+
+### Admin-Only Endpoints
+
+These endpoints require the `admin` role:
+
+- `POST /api/especialidades` - Create specialty
+- `PUT /api/especialidades/:id` - Update specialty
+- `DELETE /api/especialidades/:id` - Delete specialty
+- `POST /api/medicos` - Create doctor
+- `DELETE /api/citas/:id` - Delete appointment
+- `POST /api/admin-auth/crear-auth` - Create auth user
+
+**Example:**
+
+```bash
+curl -X POST http://localhost:3000/api/especialidades \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Neurología",
+    "descripcion": "Especialidad del sistema nervioso"
+  }'
+```
+
+### Admin & Assistant Endpoints
+
+These endpoints accept both `admin` and `asistente` roles:
+
+- `GET /api/citas` - List all appointments
+- `GET /api/citas/:id` - Get appointment by ID
+- `PUT /api/citas/:id/confirmar` - Confirm appointment
+- `PUT /api/citas/:id/cancelar` - Cancel appointment
+- `PUT /api/citas/:id/atender` - Mark as attended
+
+**Example:**
+
+```bash
+curl -X PUT http://localhost:3000/api/citas/1/confirmar \
+  -H "Authorization: Bearer <admin-or-assistant-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "medico_id": 3
+  }'
+```
+
+## Error Responses
+
+The API returns specific error codes for authentication issues:
+
+| Status Code | Message | Meaning |
+|-------------|---------|---------|
+| `401` | Token requerido | No Authorization header provided |
+| `401` | Token inválido | JWT token is malformed or expired |
+| `403` | Usuario no autorizado | User exists in Supabase but not in internal database |
+| `403` | Acceso denegado | User doesn't have the required role |
+
+**Example Error Response:**
+
+```json
+{
+  "message": "Token requerido"
+}
+```
+
+## Security Best Practices
+
+<Warning>
+  **Important Security Considerations**
+</Warning>
+
+1. **Never expose your Service Role Key**: The `SUPABASE_SERVICE_ROLE_KEY` bypasses Row Level Security. Only use it server-side for admin operations.
+
+2. **Use HTTPS in production**: Always use HTTPS to prevent token interception.
+
+3. **Token expiration**: JWT tokens expire after 1 hour by default. Implement token refresh logic in your client application.
+
+4. **Environment variables**: Store all secrets in environment variables, never commit them to version control.
+
+5. **Rate limiting**: Implement rate limiting on authentication endpoints to prevent brute force attacks.
+
+## Token Refresh
+
+Supabase access tokens expire after 1 hour. Use the refresh token to obtain a new access token:
+
+```javascript
+const { data, error } = await supabase.auth.refreshSession({
+  refresh_token: refreshToken
+})
+
+if (data.session) {
+  const newAccessToken = data.session.access_token
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="book" href="/api-reference/public/appointments">
+    Explore all available endpoints
+  </Card>
+  <Card title="Appointments API" icon="calendar" href="/api-reference/appointments/list">
+    Learn about appointment management
+  </Card>
+</CardGroup>

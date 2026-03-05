@@ -1,0 +1,142 @@
+---
+title: "Cancel Appointment"
+api: "PUT /api/citas/:id/cancelar"
+description: "Cancel an appointment and remove doctor assignment"
+---
+
+## Authentication
+
+This endpoint requires authentication and authorization.
+
+**Required roles:** `admin` or `asistente`
+
+**Header:**
+```
+Authorization: Bearer <token>
+```
+
+## Path Parameters
+
+<ParamField path="id" type="number" required>
+  The appointment ID to cancel
+</ParamField>
+
+## Response
+
+Returns a success message and the updated appointment object.
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="cita" type="object">
+  Updated appointment object
+  
+  <ResponseField name="id" type="number">
+    Appointment ID
+  </ResponseField>
+  
+  <ResponseField name="cliente_id" type="number">
+    Public client ID
+  </ResponseField>
+  
+  <ResponseField name="medico_id" type="null">
+    Doctor assignment removed (set to null)
+  </ResponseField>
+  
+  <ResponseField name="fecha_solicitada" type="string">
+    Requested date (ISO 8601)
+  </ResponseField>
+  
+  <ResponseField name="hora_solicitada" type="string">
+    Requested time (ISO 8601)
+  </ResponseField>
+  
+  <ResponseField name="fecha_confirmada" type="string | null">
+    Confirmed date (ISO 8601)
+  </ResponseField>
+  
+  <ResponseField name="hora_confirmada" type="string | null">
+    Confirmed time (ISO 8601)
+  </ResponseField>
+  
+  <ResponseField name="sintomas" type="string | null">
+    Patient symptoms description
+  </ResponseField>
+  
+  <ResponseField name="estado" type="string">
+    Appointment status - updated to `cancelada`
+  </ResponseField>
+  
+  <ResponseField name="created_at" type="string">
+    Creation timestamp
+  </ResponseField>
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X PUT https://api.example.com/api/citas/1/cancelar \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json"
+```
+
+## Example Response
+
+```json
+{
+  "message": "Cita cancelada",
+  "cita": {
+    "id": 1,
+    "cliente_id": 5,
+    "medico_id": null,
+    "fecha_solicitada": "2026-03-15T00:00:00.000Z",
+    "hora_solicitada": "1970-01-01T14:30:00.000Z",
+    "fecha_confirmada": "2026-03-15T00:00:00.000Z",
+    "hora_confirmada": "2026-03-05T18:20:00.000Z",
+    "sintomas": "Dolor de cabeza constante",
+    "estado": "cancelada",
+    "created_at": "2026-03-05T10:00:00.000Z"
+  }
+}
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User doesn't have required role
+  
+  ```json
+  {
+    "message": "Acceso denegado: requiere rol admin o asistente"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while canceling appointment
+  
+  ```json
+  {
+    "message": "Error al cancelar cita"
+  }
+  ```
+</ResponseField>
+
+## Notes
+
+- Canceling an appointment updates its status to `cancelada`
+- The `medico_id` field is set to `null`, removing any doctor assignment
+- This operation can be performed on appointments in any status
+- No request body is required for this operation
+- The confirmed date and time are preserved for record-keeping

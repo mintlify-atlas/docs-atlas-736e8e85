@@ -1,0 +1,127 @@
+---
+title: 'Get Contact Message'
+api: 'GET /api/contacto/:id'
+description: 'Retrieve a specific contact message by ID'
+---
+
+This endpoint retrieves a single contact message by its ID, including full client information.
+
+## Authentication
+
+No authentication required based on the source code.
+
+## Path Parameters
+
+<ParamField path="id" type="number" required>
+  The ID of the contact message to retrieve
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="number">
+  Message ID
+</ResponseField>
+
+<ResponseField name="cliente_id" type="number">
+  ID of the public client who sent the message
+</ResponseField>
+
+<ResponseField name="asunto" type="string">
+  Message subject or title
+</ResponseField>
+
+<ResponseField name="mensaje" type="string">
+  Message content
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Message creation timestamp
+</ResponseField>
+
+<ResponseField name="cliente" type="object">
+  Complete client information
+  
+  <ResponseField name="cliente.id" type="number">
+    Client ID
+  </ResponseField>
+  
+  <ResponseField name="cliente.nombres" type="string">
+    Client's first name(s)
+  </ResponseField>
+  
+  <ResponseField name="cliente.apellidos" type="string">
+    Client's last name(s)
+  </ResponseField>
+  
+  <ResponseField name="cliente.telefono" type="string">
+    Client's phone number
+  </ResponseField>
+  
+  <ResponseField name="cliente.email" type="string">
+    Client's email address
+  </ResponseField>
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="400 Bad Request" type="object">
+  Returned when the ID parameter is invalid
+  
+  ```json
+  {
+    "message": "ID inválido"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="404 Not Found" type="object">
+  Returned when the message is not found
+  
+  ```json
+  {
+    "message": "Mensaje no encontrado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error al obtener mensaje"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET https://api.example.com/api/contacto/78 \
+  -H "Content-Type: application/json"
+```
+
+## Example Response
+
+```json
+{
+  "id": 78,
+  "cliente_id": 45,
+  "asunto": "Consulta sobre horarios de atención",
+  "mensaje": "Buenos días, quisiera saber si atienden los días sábados y cuál es el horario. Gracias.",
+  "created_at": "2026-03-05T14:45:00.000Z",
+  "cliente": {
+    "id": 45,
+    "nombres": "Juan",
+    "apellidos": "Pérez",
+    "telefono": "+502 5555-1234",
+    "email": "juan.perez@example.com",
+    "created_at": "2026-03-01T08:00:00.000Z"
+  }
+}
+```
+
+## Notes
+
+- The ID must be a valid integer
+- Returns complete client details for context

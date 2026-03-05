@@ -1,0 +1,118 @@
+---
+title: 'Get Recent Appointments (Last 7 Days)'
+api: 'GET /api/dashboard/citas-ultimos-7-dias'
+description: 'Retrieve appointment counts for each of the last 7 days'
+---
+
+This endpoint returns the number of appointments created each day for the last 7 days, useful for trend analysis and time-series charts.
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with a Bearer token.
+  
+  Only users with role `admin` or `asistente` can access this endpoint.
+</Warning>
+
+## Request Headers
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Response
+
+<ResponseField name="data" type="array">
+  Array of daily appointment count objects (7 days)
+  
+  <ResponseField name="fecha" type="string">
+    Date in ISO format (YYYY-MM-DD)
+  </ResponseField>
+  
+  <ResponseField name="total" type="number">
+    Number of appointments created on this date
+  </ResponseField>
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized" type="object">
+  Returned when no valid authentication token is provided
+  
+  ```json
+  {
+    "message": "Token requerido"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden" type="object">
+  Returned when the user's role is not authorized
+  
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error citas últimos días"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET https://api.example.com/api/dashboard/citas-ultimos-7-dias \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>"
+```
+
+## Example Response
+
+```json
+[
+  {
+    "fecha": "2026-02-27",
+    "total": 5
+  },
+  {
+    "fecha": "2026-02-28",
+    "total": 8
+  },
+  {
+    "fecha": "2026-03-01",
+    "total": 12
+  },
+  {
+    "fecha": "2026-03-02",
+    "total": 7
+  },
+  {
+    "fecha": "2026-03-03",
+    "total": 9
+  },
+  {
+    "fecha": "2026-03-04",
+    "total": 11
+  },
+  {
+    "fecha": "2026-03-05",
+    "total": 6
+  }
+]
+```
+
+## Notes
+
+- Always returns exactly 7 days of data, including days with 0 appointments
+- Dates are based on the `created_at` timestamp of appointments
+- The date range includes the last 6 days plus today
+- Perfect for line charts showing appointment creation trends
+- Times are normalized to 00:00:00 for date grouping

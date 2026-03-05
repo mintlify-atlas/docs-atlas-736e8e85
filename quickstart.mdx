@@ -1,80 +1,309 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get up and running with the Medical Center API in minutes
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you begin, ensure you have the following installed:
 
-### Step 1: Set up your local environment
+- **Node.js** (v14 or higher)
+- **npm** or **yarn**
+- **PostgreSQL** database
+- **Supabase** account (for authentication)
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+## Installation
+
+<Steps>
+  <Step title="Clone the Repository">
+    Clone the source code to your local machine:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    ```bash
+    git clone <repository-url>
+    cd api_centro_medico
+    ```
+  </Step>
 
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+  <Step title="Install Dependencies">
+    Install the required Node.js packages:
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
+    ```bash
+    npm install
+    ```
+    
+    This will install:
+    - Express.js (v5.2.1)
+    - Prisma Client (v5.22.0)
+    - Supabase JS (v2.87.1)
+    - JSON Web Token (v9.0.3)
+    - And other dependencies
+  </Step>
+
+  <Step title="Configure Environment Variables">
+    Create a `.env` file in the project root with the following variables:
+    
+    ```bash .env
+    # Database Configuration
+    # For migrations (direct connection)
+    DATABASE_URL="postgresql://user:password@host:5432/database"
+    
+    # For production (connection pooling via PgBouncer)
+    # DATABASE_URL="postgresql://user:password@host:6543/postgres?pgbouncer=true"
+    
+    # Supabase Configuration
+    SUPABASE_URL="https://your-project.supabase.co"
+    SUPABASE_ANON_KEY="your-anon-key"
+    SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+    ```
+    
+    <Note>
+      Get your Supabase credentials from your Supabase project dashboard under Settings > API
+    </Note>
+  </Step>
+
+  <Step title="Run Database Migrations">
+    Generate the Prisma Client and run migrations:
+    
+    ```bash
+    npx prisma generate
+    npx prisma migrate deploy
+    ```
+    
+    This will create the following tables:
+    - `personas` - Internal staff
+    - `usuarios` - Authenticated users
+    - `clientes_publicos` - Public patients
+    - `especialidades` - Medical specialties
+    - `medicos` - Doctors
+    - `citas` - Appointments
+    - `historial` - Medical history
+    - `contacto` - Contact messages
+  </Step>
+
+  <Step title="Start the Server">
+    Start the development server:
+    
+    ```bash
+    npm run dev
+    ```
+    
+    Or for production:
+    
+    ```bash
+    npm start
+    ```
+    
+    The API will be available at `http://localhost:3000`
+  </Step>
+</Steps>
+
+## Your First API Request
+
+Now that your server is running, let's make your first API request!
+
+### List All Specialties (Public Endpoint)
+
+This endpoint doesn't require authentication and returns all available medical specialties:
+
+<CodeGroup>
+```bash cURL
+curl http://localhost:3000/api/especialidades
+```
+
+```javascript JavaScript
+fetch('http://localhost:3000/api/especialidades')
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+```python Python
+import requests
+
+response = requests.get('http://localhost:3000/api/especialidades')
+print(response.json())
+```
+</CodeGroup>
+
+**Example Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "nombre": "Cardiología",
+    "descripcion": "Especialidad médica que se ocupa del corazón",
+    "created_at": "2024-03-05T10:30:00.000Z"
+  },
+  {
+    "id": 2,
+    "nombre": "Pediatría",
+    "descripcion": "Atención médica de niños y adolescentes",
+    "created_at": "2024-03-05T10:31:00.000Z"
+  }
+]
+```
+
+### Create an Appointment (Public Endpoint)
+
+Patients can request appointments without authentication:
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://localhost:3000/api/citas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombres": "Juan",
+    "apellidos": "Pérez",
+    "telefono": "555-1234",
+    "email": "juan@example.com",
+    "fecha_solicitada": "2024-03-10",
+    "hora_solicitada": "14:30",
+    "sintomas": "Dolor de pecho"
+  }'
+```
+
+```javascript JavaScript
+fetch('http://localhost:3000/api/citas', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    nombres: 'Juan',
+    apellidos: 'Pérez',
+    telefono: '555-1234',
+    email: 'juan@example.com',
+    fecha_solicitada: '2024-03-10',
+    hora_solicitada: '14:30',
+    sintomas: 'Dolor de pecho'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+</CodeGroup>
+
+**Example Response:**
+
+```json
+{
+  "message": "Cita registrada",
+  "cita": {
+    "id": 1,
+    "cliente_id": 1,
+    "fecha_solicitada": "2024-03-10T00:00:00.000Z",
+    "hora_solicitada": "1970-01-01T14:30:00.000Z",
+    "sintomas": "Dolor de pecho",
+    "estado": "pendiente",
+    "created_at": "2024-03-05T15:45:00.000Z"
+  }
+}
+```
+
+<Info>
+  The appointment is created with `estado: "pendiente"` status. An admin or assistant must confirm it and assign a doctor.
+</Info>
+
+### List Public Doctors
+
+View all active doctors available for appointments:
+
+```bash
+curl http://localhost:3000/api/medicos/public
+```
+
+**Example Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "persona_id": 3,
+    "especialidad_id": 1,
+    "email": "dra.garcia@example.com",
+    "colegiatura": "12345",
+    "activo": true,
+    "persona": {
+      "nombres": "María",
+      "apellidos": "García",
+      "telefono": "555-5678"
+    },
+    "especialidad": {
+      "nombre": "Cardiología"
+    }
+  }
+]
+```
+
+## Database Schema
+
+Here's a quick overview of the Prisma schema:
+
+<Accordion title="View Database Schema">
+```prisma
+enum rol_usuario {
+  admin
+  asistente
+}
+
+enum estado_cita {
+  pendiente
+  confirmada
+  cancelada
+  atendida
+}
+
+model Personas {
+  id         Int      @id @default(autoincrement())
+  nombres    String
+  apellidos  String
+  telefono   String?
+  dni        String?  @unique
+  created_at DateTime @default(now())
+}
+
+model Usuarios {
+  id         String   @id  // UUID from Supabase
+  persona_id Int      @unique
+  role       rol_usuario
+  created_at DateTime @default(now())
+}
+
+model Clientes_publicos {
+  id         Int      @id @default(autoincrement())
+  nombres    String
+  apellidos  String?
+  telefono   String?
+  email      String?
+  created_at DateTime @default(now())
+}
+
+model Citas {
+  id                  Int         @id @default(autoincrement())
+  cliente_id          Int
+  fecha_solicitada    DateTime    @db.Date
+  hora_solicitada     DateTime    @db.Time
+  fecha_confirmada    DateTime?   @db.Date
+  hora_confirmada     DateTime?   @db.Time
+  medico_id           Int?
+  sintomas            String?
+  estado              estado_cita @default(pendiente)
+  created_at          DateTime    @default(now())
+}
+```
 </Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
+## Next Steps
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Authentication" icon="key" href="/authentication">
+    Learn how to authenticate admin and assistant users
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/public/appointments">
+    Explore all available endpoints
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+<Warning>
+  Remember to keep your `SUPABASE_SERVICE_ROLE_KEY` secret and never commit it to version control!
+</Warning>

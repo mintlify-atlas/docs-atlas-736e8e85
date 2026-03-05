@@ -1,0 +1,128 @@
+---
+title: 'List Public Doctors'
+api: 'GET /api/medicos/public'
+description: 'Retrieve a list of all active doctors'
+---
+
+This endpoint returns a list of all active doctors available for appointments. Only doctors with `activo: true` status are included in the response.
+
+## Authentication
+
+No authentication required - this is a public endpoint.
+
+## Query Parameters
+
+No query parameters required.
+
+## Response
+
+Returns an array of doctor objects.
+
+<ResponseField name="doctors" type="array">
+  Array of active doctor objects
+  
+  <ResponseField name="[].id" type="number">
+    Doctor ID
+  </ResponseField>
+  
+  <ResponseField name="[].persona_id" type="number">
+    Associated person ID
+  </ResponseField>
+  
+  <ResponseField name="[].especialidad_id" type="number">
+    Specialty ID
+  </ResponseField>
+  
+  <ResponseField name="[].email" type="string">
+    Doctor's email address
+  </ResponseField>
+  
+  <ResponseField name="[].colegiatura" type="string">
+    Doctor's professional license number
+  </ResponseField>
+  
+  <ResponseField name="[].activo" type="boolean">
+    Active status (always true for this endpoint)
+  </ResponseField>
+  
+  <ResponseField name="[].persona" type="object">
+    Personal information of the doctor
+    
+    <ResponseField name="persona.nombres" type="string">
+      Doctor's first name(s)
+    </ResponseField>
+    
+    <ResponseField name="persona.apellidos" type="string">
+      Doctor's last name(s)
+    </ResponseField>
+    
+    <ResponseField name="persona.telefono" type="string">
+      Doctor's phone number
+    </ResponseField>
+  </ResponseField>
+  
+  <ResponseField name="[].especialidad" type="object">
+    Specialty information
+    
+    <ResponseField name="especialidad.nombre" type="string">
+      Specialty name
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error al listar médicos"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl https://api.example.com/api/medicos/public
+```
+
+## Example Response
+
+```json
+[
+  {
+    "id": 1,
+    "persona_id": 10,
+    "especialidad_id": 2,
+    "email": "dr.garcia@hospital.com",
+    "colegiatura": "MED-12345",
+    "activo": true,
+    "persona": {
+      "nombres": "María",
+      "apellidos": "García López",
+      "telefono": "+502 5555-9876"
+    },
+    "especialidad": {
+      "nombre": "Cardiología"
+    }
+  },
+  {
+    "id": 2,
+    "persona_id": 15,
+    "especialidad_id": 5,
+    "email": "dr.rodriguez@hospital.com",
+    "colegiatura": "MED-67890",
+    "activo": true,
+    "persona": {
+      "nombres": "Carlos",
+      "apellidos": "Rodríguez Pérez",
+      "telefono": "+502 5555-5432"
+    },
+    "especialidad": {
+      "nombre": "Pediatría"
+    }
+  }
+]
+```

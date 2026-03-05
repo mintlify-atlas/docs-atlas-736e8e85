@@ -1,0 +1,51 @@
+---
+title: 'Get Client'
+openapi: 'GET /api/clientes/:id'
+---
+
+Retrieves a specific public client by their ID.
+
+## Authentication
+
+This endpoint is currently **public** and does not require authentication.
+
+<Note>
+  While this endpoint is currently public, consider the security implications of exposing client data without authentication.
+</Note>
+
+## URL Parameters
+
+- `id` (integer, required): The client ID to retrieve
+
+## Response
+
+Returns a single client object:
+
+- `id` (integer): Auto-incremented client identifier
+- `nombre` (string): Client name
+- `email` (string): Client email
+- `telefono` (string): Client phone number
+- `created_at` (datetime): Timestamp of client creation
+- Additional fields as defined in the schema
+
+## Error Responses
+
+- `404`: Client not found
+
+## Use Cases
+
+This endpoint is useful for:
+
+- Retrieving client information for appointment confirmations
+- Looking up booking details by client ID
+- Verifying client information before processing appointments
+
+## Public Appointment Flow
+
+Clientes_publicos are created automatically when public users book appointments:
+
+1. User visits the public booking page
+2. User fills in their contact information (name, email, phone)
+3. System creates a clientes_publicos record
+4. Client ID is linked to the appointment record
+5. Confirmation emails are sent using the stored contact information

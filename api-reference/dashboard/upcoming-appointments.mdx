@@ -1,0 +1,217 @@
+---
+title: 'Get Upcoming Appointments'
+api: 'GET /api/dashboard/proximas-citas'
+description: 'Retrieve the next 5 pending or confirmed appointments'
+---
+
+This endpoint returns the next 5 upcoming appointments with status `pendiente` or `confirmada`, ordered by date and time. Includes complete client and doctor information.
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with a Bearer token.
+  
+  Only users with role `admin` or `asistente` can access this endpoint.
+</Warning>
+
+## Request Headers
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Response
+
+<ResponseField name="citas" type="array">
+  Array of upcoming appointment objects (maximum 5)
+  
+  <ResponseField name="id" type="number">
+    Appointment ID
+  </ResponseField>
+  
+  <ResponseField name="cliente_id" type="number">
+    Client ID
+  </ResponseField>
+  
+  <ResponseField name="medico_id" type="number">
+    Doctor ID (may be null if not assigned)
+  </ResponseField>
+  
+  <ResponseField name="fecha_solicitada" type="string">
+    Requested appointment date
+  </ResponseField>
+  
+  <ResponseField name="hora_solicitada" type="string">
+    Requested appointment time
+  </ResponseField>
+  
+  <ResponseField name="fecha_confirmada" type="string">
+    Confirmed appointment date (if status is confirmada)
+  </ResponseField>
+  
+  <ResponseField name="hora_confirmada" type="string">
+    Confirmed appointment time (if status is confirmada)
+  </ResponseField>
+  
+  <ResponseField name="sintomas" type="string">
+    Patient symptoms or reason for visit
+  </ResponseField>
+  
+  <ResponseField name="estado" type="string">
+    Appointment status (pendiente or confirmada)
+  </ResponseField>
+  
+  <ResponseField name="created_at" type="string">
+    Appointment creation timestamp
+  </ResponseField>
+  
+  <ResponseField name="cliente" type="object">
+    Client/patient information
+    
+    <ResponseField name="cliente.id" type="number">
+      Client ID
+    </ResponseField>
+    
+    <ResponseField name="cliente.nombres" type="string">
+      Client's first name(s)
+    </ResponseField>
+    
+    <ResponseField name="cliente.apellidos" type="string">
+      Client's last name(s)
+    </ResponseField>
+    
+    <ResponseField name="cliente.telefono" type="string">
+      Client's phone number
+    </ResponseField>
+    
+    <ResponseField name="cliente.email" type="string">
+      Client's email address
+    </ResponseField>
+  </ResponseField>
+  
+  <ResponseField name="medico" type="object">
+    Doctor information (if assigned)
+    
+    <ResponseField name="medico.id" type="number">
+      Doctor ID
+    </ResponseField>
+    
+    <ResponseField name="medico.especialidad_id" type="number">
+      Medical specialty ID
+    </ResponseField>
+    
+    <ResponseField name="medico.especialidad" type="object">
+      Specialty information
+      
+      <ResponseField name="especialidad.id" type="number">
+        Specialty ID
+      </ResponseField>
+      
+      <ResponseField name="especialidad.nombre" type="string">
+        Specialty name
+      </ResponseField>
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized" type="object">
+  Returned when no valid authentication token is provided
+  
+  ```json
+  {
+    "message": "Token requerido"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden" type="object">
+  Returned when the user's role is not authorized
+  
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error próximas citas"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET https://api.example.com/api/dashboard/proximas-citas \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>"
+```
+
+## Example Response
+
+```json
+[
+  {
+    "id": 125,
+    "cliente_id": 45,
+    "medico_id": 10,
+    "fecha_solicitada": "2026-03-06T00:00:00.000Z",
+    "hora_solicitada": "1970-01-01T09:00:00.000Z",
+    "fecha_confirmada": "2026-03-06T00:00:00.000Z",
+    "hora_confirmada": "1970-01-01T09:00:00.000Z",
+    "sintomas": "Control de presión arterial",
+    "estado": "confirmada",
+    "created_at": "2026-03-01T10:00:00.000Z",
+    "cliente": {
+      "id": 45,
+      "nombres": "Juan",
+      "apellidos": "Pérez",
+      "telefono": "+502 5555-1234",
+      "email": "juan.perez@example.com"
+    },
+    "medico": {
+      "id": 10,
+      "especialidad_id": 3,
+      "especialidad": {
+        "id": 3,
+        "nombre": "Cardiología"
+      }
+    }
+  },
+  {
+    "id": 126,
+    "cliente_id": 47,
+    "medico_id": null,
+    "fecha_solicitada": "2026-03-07T00:00:00.000Z",
+    "hora_solicitada": "1970-01-01T14:30:00.000Z",
+    "fecha_confirmada": null,
+    "hora_confirmada": null,
+    "sintomas": "Dolor de espalda",
+    "estado": "pendiente",
+    "created_at": "2026-03-02T08:15:00.000Z",
+    "cliente": {
+      "id": 47,
+      "nombres": "María",
+      "apellidos": "López",
+      "telefono": "+502 5555-5678",
+      "email": "maria.lopez@example.com"
+    },
+    "medico": null
+  }
+]
+```
+
+## Notes
+
+- Only returns appointments with status `pendiente` or `confirmada`
+- Maximum of 5 appointments are returned
+- Results are ordered by `fecha_solicitada` and `hora_solicitada` (earliest first)
+- Includes complete client and doctor information with specialty details
+- Useful for dashboard "next appointments" widgets

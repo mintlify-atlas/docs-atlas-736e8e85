@@ -1,0 +1,154 @@
+---
+title: 'Update Doctor'
+description: 'Update doctor information'
+---
+
+## Endpoint
+
+```
+PUT /api/medicos/:id
+```
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with an **admin** role. Include a valid JWT token in the Authorization header.
+</Warning>
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Description
+
+Updates the information of an existing doctor. You can modify the specialty, email, professional license number, and active status. Note that the associated person cannot be changed.
+
+## Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Unique identifier of the doctor to update
+</ParamField>
+
+## Request Body
+
+<Note>
+  All fields are optional. Only include the fields you want to update.
+</Note>
+
+<ParamField body="especialidad_id" type="integer" optional>
+  ID of the medical specialty to assign to the doctor
+</ParamField>
+
+<ParamField body="email" type="string" optional>
+  Professional email address for the doctor
+</ParamField>
+
+<ParamField body="colegiatura" type="string" optional>
+  Professional license or medical registration number
+</ParamField>
+
+<ParamField body="activo" type="boolean" optional>
+  Whether the doctor is active in the system
+</ParamField>
+
+## Response
+
+Returns the updated doctor object.
+
+### Response Fields
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the doctor
+</ResponseField>
+
+<ResponseField name="persona_id" type="integer">
+  ID of the associated person (unchanged)
+</ResponseField>
+
+<ResponseField name="especialidad_id" type="integer">
+  Updated specialty ID
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Updated email address
+</ResponseField>
+
+<ResponseField name="colegiatura" type="string">
+  Updated professional license number
+</ResponseField>
+
+<ResponseField name="activo" type="boolean">
+  Updated active status
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X PUT "https://api.example.com/api/medicos/3" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "especialidad_id": 5,
+    "email": "dr.smith.new@hospital.com",
+    "activo": true
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "id": 3,
+  "persona_id": 5,
+  "especialidad_id": 5,
+  "email": "dr.smith.new@hospital.com",
+  "colegiatura": "MED-12345",
+  "activo": true
+}
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User does not have admin role
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="404 Not Found">
+  Doctor with the specified ID does not exist
+  ```json
+  {
+    "message": "Médico no encontrado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while updating doctor
+  ```json
+  {
+    "message": "Error al actualizar médico"
+  }
+  ```
+</ResponseField>
+
+## Notes
+
+<Info>
+  - The `persona_id` cannot be changed after a doctor is created
+  - To deactivate a doctor without deleting their record, set `activo` to `false`
+  - All fields in the request body are optional - only send the fields you want to update
+</Info>

@@ -1,0 +1,92 @@
+---
+title: 'List Specialties'
+description: 'Retrieve all medical specialties (admin view)'
+---
+
+## Endpoint
+
+```
+GET /api/especialidades
+```
+
+## Authentication
+
+<Note>
+  This endpoint is **public** and does not require authentication for basic listing. However, this documentation covers the admin context where you may want to manage specialties.
+</Note>
+
+## Description
+
+Retrieves all medical specialties available in the system. The results are ordered alphabetically by name. This endpoint serves both public users (for selecting specialties when booking appointments) and administrators (for managing the specialty catalog).
+
+## Response
+
+Returns an array of specialty objects.
+
+### Response Fields
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the specialty
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Name of the medical specialty
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description of the specialty (can be null)
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET "https://api.example.com/api/especialidades"
+```
+
+## Example Response
+
+```json
+[
+  {
+    "id": 1,
+    "nombre": "Cardiology",
+    "descripcion": "Medical specialty dealing with disorders of the heart"
+  },
+  {
+    "id": 2,
+    "nombre": "Dermatology",
+    "descripcion": "Medical specialty dealing with skin disorders"
+  },
+  {
+    "id": 3,
+    "nombre": "Pediatrics",
+    "descripcion": "Medical care of infants, children, and adolescents"
+  }
+]
+```
+
+## Error Responses
+
+<ResponseField name="500 Internal Server Error">
+  Server error while retrieving specialties
+  ```json
+  {
+    "message": "Error al listar especialidades"
+  }
+  ```
+</ResponseField>
+
+## Notes
+
+<Info>
+  - Results are sorted alphabetically by specialty name
+  - This endpoint returns all specialties without pagination
+  - No authentication is required for viewing the list
+  - For creating, updating, or deleting specialties, admin authentication is required
+</Info>
+
+## Related Endpoints
+
+- [Create Specialty](/api-reference/specialties/create) - Add a new specialty (admin only)
+- [Update Specialty](/api-reference/specialties/update) - Modify a specialty (admin only)
+- [Delete Specialty](/api-reference/specialties/delete) - Remove a specialty (admin only)

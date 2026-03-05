@@ -1,0 +1,237 @@
+---
+title: "Search Appointments"
+api: "GET /api/citas/buscar"
+description: "Search appointments by patient name (first name or last name)"
+---
+
+## Authentication
+
+This endpoint requires authentication and authorization.
+
+**Required roles:** `admin` or `asistente`
+
+**Header:**
+```
+Authorization: Bearer <token>
+```
+
+## Query Parameters
+
+<ParamField query="q" type="string" required>
+  Search query - searches in client's first name and last name (case-insensitive)
+</ParamField>
+
+## Response
+
+Returns an array of matching appointments ordered by creation date (descending), limited to 10 results.
+
+<ResponseField name="appointments" type="array">
+  Array of appointment objects matching the search query
+  
+  <ResponseField name="id" type="number">
+    Appointment ID
+  </ResponseField>
+  
+  <ResponseField name="cliente_id" type="number">
+    Public client ID
+  </ResponseField>
+  
+  <ResponseField name="medico_id" type="number | null">
+    Assigned doctor ID (null if not confirmed)
+  </ResponseField>
+  
+  <ResponseField name="fecha_solicitada" type="string">
+    Requested date (ISO 8601)
+  </ResponseField>
+  
+  <ResponseField name="hora_solicitada" type="string">
+    Requested time (ISO 8601)
+  </ResponseField>
+  
+  <ResponseField name="fecha_confirmada" type="string | null">
+    Confirmed date (ISO 8601)
+  </ResponseField>
+  
+  <ResponseField name="hora_confirmada" type="string | null">
+    Confirmed time (ISO 8601)
+  </ResponseField>
+  
+  <ResponseField name="sintomas" type="string | null">
+    Patient symptoms description
+  </ResponseField>
+  
+  <ResponseField name="estado" type="string">
+    Appointment status: `pendiente`, `confirmada`, `atendida`, or `cancelada`
+  </ResponseField>
+  
+  <ResponseField name="created_at" type="string">
+    Creation timestamp
+  </ResponseField>
+  
+  <ResponseField name="cliente" type="object">
+    Public client information
+    
+    <ResponseField name="id" type="number">
+      Client ID
+    </ResponseField>
+    
+    <ResponseField name="nombres" type="string">
+      First name(s)
+    </ResponseField>
+    
+    <ResponseField name="apellidos" type="string | null">
+      Last name(s)
+    </ResponseField>
+    
+    <ResponseField name="telefono" type="string">
+      Phone number
+    </ResponseField>
+    
+    <ResponseField name="email" type="string | null">
+      Email address
+    </ResponseField>
+  </ResponseField>
+  
+  <ResponseField name="medico" type="object | null">
+    Assigned doctor information (null if not confirmed)
+    
+    <ResponseField name="id" type="number">
+      Doctor ID
+    </ResponseField>
+    
+    <ResponseField name="persona_id" type="number">
+      Person ID
+    </ResponseField>
+    
+    <ResponseField name="especialidad_id" type="number">
+      Specialty ID
+    </ResponseField>
+    
+    <ResponseField name="persona" type="object">
+      Doctor's personal information
+      
+      <ResponseField name="nombres" type="string">
+        First name(s)
+      </ResponseField>
+      
+      <ResponseField name="apellidos" type="string">
+        Last name(s)
+      </ResponseField>
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET "https://api.example.com/api/citas/buscar?q=María" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+## Example Response
+
+```json
+[
+  {
+    "id": 1,
+    "cliente_id": 5,
+    "medico_id": 2,
+    "fecha_solicitada": "2026-03-15T00:00:00.000Z",
+    "hora_solicitada": "1970-01-01T14:30:00.000Z",
+    "fecha_confirmada": "2026-03-15T00:00:00.000Z",
+    "hora_confirmada": "2026-03-05T18:20:00.000Z",
+    "sintomas": "Dolor de cabeza constante",
+    "estado": "confirmada",
+    "created_at": "2026-03-05T10:00:00.000Z",
+    "cliente": {
+      "id": 5,
+      "nombres": "María",
+      "apellidos": "González",
+      "telefono": "+50312345678",
+      "email": "maria@example.com"
+    },
+    "medico": {
+      "id": 2,
+      "persona_id": 10,
+      "persona": {
+        "nombres": "Carlos",
+        "apellidos": "Ramírez"
+      }
+    }
+  },
+  {
+    "id": 8,
+    "cliente_id": 12,
+    "medico_id": null,
+    "fecha_solicitada": "2026-03-20T00:00:00.000Z",
+    "hora_solicitada": "1970-01-01T09:00:00.000Z",
+    "fecha_confirmada": null,
+    "hora_confirmada": null,
+    "sintomas": "Chequeo general",
+    "estado": "pendiente",
+    "created_at": "2026-03-04T15:30:00.000Z",
+    "cliente": {
+      "id": 12,
+      "nombres": "Ana María",
+      "apellidos": "López",
+      "telefono": "+50398765432",
+      "email": "ana@example.com"
+    },
+    "medico": null
+  }
+]
+```
+
+## Empty Query Response
+
+If the query parameter is empty or missing, an empty array is returned:
+
+```bash
+curl -X GET "https://api.example.com/api/citas/buscar?q=" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+```json
+[]
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User doesn't have required role
+  
+  ```json
+  {
+    "message": "Acceso denegado: requiere rol admin o asistente"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while searching appointments
+  
+  ```json
+  {
+    "message": "Error al buscar citas"
+  }
+  ```
+</ResponseField>
+
+## Notes
+
+- The search is case-insensitive
+- Searches both first names (`nombres`) and last names (`apellidos`)
+- Returns a maximum of 10 results
+- Results are ordered by creation date (most recent first)
+- Empty or whitespace-only queries return an empty array
+- Partial matches are supported (e.g., "Mar" will match "María" and "Marta")

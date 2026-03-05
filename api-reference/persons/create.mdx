@@ -1,0 +1,50 @@
+---
+title: 'Create Person'
+openapi: 'POST /api/personas'
+---
+
+Creates a new person (persona) record in the system.
+
+## Authentication
+
+This endpoint requires authentication and **admin** role access.
+
+## Request Body
+
+- `dni` (string, required): Document identification number (must be unique)
+- Additional fields for personal information (nombre, apellido, etc.)
+
+## Key Information
+
+- The `dni` field must be unique across all personas
+- If a persona with the same DNI already exists, the endpoint returns the existing record with a 200 status
+- This endpoint does NOT create a Usuario - it only creates personal information
+
+## Response
+
+Returns the created (or existing) persona object:
+
+- `id` (integer): Auto-incremented persona identifier
+- `dni` (string): Document identification number
+- `nombre` (string): First name
+- `apellido` (string): Last name
+- Additional personal information fields
+
+## Special Behavior
+
+Unlike typical create endpoints, this endpoint returns the existing record if a persona with the same DNI already exists, rather than throwing an error. This is indicated by:
+
+- Status 201: New persona created
+- Status 200: Persona already exists (returns existing record)
+
+## Error Responses
+
+- `400`: Missing required DNI field
+
+## Creating Staff Members
+
+To create a staff member with system access:
+
+1. First, create the Persona using this endpoint
+2. Create a user in Supabase Auth
+3. Then, create a Usuario record linking the Supabase UUID to this persona's ID

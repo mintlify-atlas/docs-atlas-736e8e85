@@ -1,0 +1,216 @@
+---
+title: "Get Appointment"
+api: "GET /api/citas/:id"
+description: "Retrieve a specific appointment by ID with full details"
+---
+
+## Authentication
+
+This endpoint requires authentication and authorization.
+
+**Required roles:** `admin` or `asistente`
+
+**Header:**
+```
+Authorization: Bearer <token>
+```
+
+## Path Parameters
+
+<ParamField path="id" type="number" required>
+  The appointment ID
+</ParamField>
+
+## Response
+
+Returns a single appointment object with nested client and doctor information.
+
+<ResponseField name="id" type="number">
+  Appointment ID
+</ResponseField>
+
+<ResponseField name="cliente_id" type="number">
+  Public client ID
+</ResponseField>
+
+<ResponseField name="medico_id" type="number | null">
+  Assigned doctor ID (null if not confirmed)
+</ResponseField>
+
+<ResponseField name="fecha_solicitada" type="string">
+  Requested date (ISO 8601)
+</ResponseField>
+
+<ResponseField name="hora_solicitada" type="string">
+  Requested time (ISO 8601)
+</ResponseField>
+
+<ResponseField name="fecha_confirmada" type="string | null">
+  Confirmed date (ISO 8601)
+</ResponseField>
+
+<ResponseField name="hora_confirmada" type="string | null">
+  Confirmed time (ISO 8601)
+</ResponseField>
+
+<ResponseField name="sintomas" type="string | null">
+  Patient symptoms description
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Appointment status: `pendiente`, `confirmada`, `atendida`, or `cancelada`
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Creation timestamp
+</ResponseField>
+
+<ResponseField name="cliente" type="object">
+  Public client information
+  
+  <ResponseField name="id" type="number">
+    Client ID
+  </ResponseField>
+  
+  <ResponseField name="nombres" type="string">
+    First name(s)
+  </ResponseField>
+  
+  <ResponseField name="apellidos" type="string | null">
+    Last name(s)
+  </ResponseField>
+  
+  <ResponseField name="telefono" type="string">
+    Phone number
+  </ResponseField>
+  
+  <ResponseField name="email" type="string | null">
+    Email address
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="medico" type="object | null">
+  Assigned doctor information (null if not confirmed)
+  
+  <ResponseField name="id" type="number">
+    Doctor ID
+  </ResponseField>
+  
+  <ResponseField name="persona_id" type="number">
+    Person ID
+  </ResponseField>
+  
+  <ResponseField name="especialidad_id" type="number">
+    Specialty ID
+  </ResponseField>
+  
+  <ResponseField name="persona" type="object">
+    Doctor's personal information
+    
+    <ResponseField name="nombres" type="string">
+      First name(s)
+    </ResponseField>
+    
+    <ResponseField name="apellidos" type="string">
+      Last name(s)
+    </ResponseField>
+  </ResponseField>
+  
+  <ResponseField name="especialidad" type="object">
+    Medical specialty
+    
+    <ResponseField name="id" type="number">
+      Specialty ID
+    </ResponseField>
+    
+    <ResponseField name="nombre" type="string">
+      Specialty name
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET https://api.example.com/api/citas/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+## Example Response
+
+```json
+{
+  "id": 1,
+  "cliente_id": 5,
+  "medico_id": 2,
+  "fecha_solicitada": "2026-03-15T00:00:00.000Z",
+  "hora_solicitada": "1970-01-01T14:30:00.000Z",
+  "fecha_confirmada": "2026-03-15T00:00:00.000Z",
+  "hora_confirmada": "2026-03-05T18:20:00.000Z",
+  "sintomas": "Dolor de cabeza constante",
+  "estado": "confirmada",
+  "created_at": "2026-03-05T10:00:00.000Z",
+  "cliente": {
+    "id": 5,
+    "nombres": "María",
+    "apellidos": "González",
+    "telefono": "+50312345678",
+    "email": "maria@example.com"
+  },
+  "medico": {
+    "id": 2,
+    "persona_id": 10,
+    "especialidad_id": 1,
+    "persona": {
+      "nombres": "Carlos",
+      "apellidos": "Ramírez"
+    },
+    "especialidad": {
+      "id": 1,
+      "nombre": "Medicina General"
+    }
+  }
+}
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User doesn't have required role
+  
+  ```json
+  {
+    "message": "Acceso denegado: requiere rol admin o asistente"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="404 Not Found">
+  Appointment not found
+  
+  ```json
+  {
+    "message": "Cita no encontrada"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while retrieving appointment
+  
+  ```json
+  {
+    "message": "Error al obtener cita"
+  }
+  ```
+</ResponseField>

@@ -1,0 +1,40 @@
+---
+title: 'Delete Person'
+openapi: 'DELETE /api/personas/:id'
+---
+
+Permanently deletes a person (persona) record from the system.
+
+## Authentication
+
+This endpoint requires authentication and **admin** role access.
+
+## URL Parameters
+
+- `id` (integer, required): The persona ID to delete
+
+## Key Information
+
+- This operation is permanent and cannot be undone
+- If the persona is linked to a Usuario, you should delete or update the Usuario first
+- Database constraints may prevent deletion if the persona is referenced by other records
+
+## Response
+
+Returns a success message:
+
+```json
+{
+  "message": "Persona eliminada correctamente"
+}
+```
+
+## Important Considerations
+
+Before deleting a persona:
+
+1. Check if it's linked to any Usuario records
+2. Consider if the persona has associated appointments or medical records
+3. Ensure you have proper backups if this is sensitive data
+
+Deleting a persona does not automatically delete any associated Usuario - you must manage that separately.

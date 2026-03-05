@@ -1,0 +1,39 @@
+---
+title: 'Delete User'
+openapi: 'DELETE /api/usuarios/:id'
+---
+
+Permanently deletes a user from the system.
+
+## Authentication
+
+This endpoint requires authentication and **admin** role access.
+
+## URL Parameters
+
+- `id` (string, required): Supabase UUID of the user to delete
+
+## Key Information
+
+- This operation is permanent and cannot be undone
+- Deleting a user does NOT delete the associated persona record
+- This only removes the user authentication/authorization record
+- The Supabase Auth user must be managed separately
+
+## Response
+
+Returns a success message:
+
+```json
+{
+  "message": "Usuario eliminado correctamente"
+}
+```
+
+## Error Responses
+
+- `404`: User not found
+
+## Important Considerations
+
+Deleting a user in this system does not delete the user from Supabase Auth. You must manage Supabase Auth users separately if you want to completely remove a user's authentication access.

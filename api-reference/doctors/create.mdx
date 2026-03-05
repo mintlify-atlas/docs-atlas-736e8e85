@@ -1,0 +1,187 @@
+---
+title: 'Create Doctor'
+description: 'Register a new doctor in the system'
+---
+
+## Endpoint
+
+```
+POST /api/medicos
+```
+
+## Authentication
+
+<Warning>
+  This endpoint requires authentication with an **admin** role. Include a valid JWT token in the Authorization header.
+</Warning>
+
+```bash
+Authorization: Bearer <token>
+```
+
+## Description
+
+Creates a new doctor record by associating an existing person with a specialty. The person must exist in the system and cannot already be registered as a doctor or user.
+
+## Request Body
+
+<ParamField body="persona_id" type="integer" required>
+  ID of the person to register as a doctor. The person must exist and not already be a doctor or user.
+</ParamField>
+
+<ParamField body="especialidad_id" type="integer" required>
+  ID of the medical specialty to assign to the doctor
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Professional email address for the doctor. Must be unique.
+</ParamField>
+
+<ParamField body="colegiatura" type="string" optional>
+  Professional license or medical registration number
+</ParamField>
+
+## Response
+
+Returns the newly created doctor object.
+
+### Response Fields
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the newly created doctor
+</ResponseField>
+
+<ResponseField name="persona_id" type="integer">
+  ID of the associated person
+</ResponseField>
+
+<ResponseField name="especialidad_id" type="integer">
+  ID of the assigned specialty
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Doctor's professional email address
+</ResponseField>
+
+<ResponseField name="colegiatura" type="string">
+  Professional license number (null if not provided)
+</ResponseField>
+
+<ResponseField name="activo" type="boolean">
+  Active status (defaults to true for new doctors)
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X POST "https://api.example.com/api/medicos" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "persona_id": 5,
+    "especialidad_id": 2,
+    "email": "dr.smith@hospital.com",
+    "colegiatura": "MED-12345"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "id": 3,
+  "persona_id": 5,
+  "especialidad_id": 2,
+  "email": "dr.smith@hospital.com",
+  "colegiatura": "MED-12345",
+  "activo": true
+}
+```
+
+## Error Responses
+
+<ResponseField name="400 Bad Request">
+  Missing required fields
+  ```json
+  {
+    "message": "persona_id, especialidad_id y email son obligatorios"
+  }
+  ```
+  
+  Person has a user role
+  ```json
+  {
+    "message": "La persona tiene un rol de usuario y no puede ser médico"
+  }
+  ```
+  
+  Invalid specialty ID
+  ```json
+  {
+    "message": "Especialidad no válida"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User does not have admin role
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="404 Not Found">
+  Person does not exist
+  ```json
+  {
+    "message": "Persona no existe"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="409 Conflict">
+  Person is already registered as a doctor
+  ```json
+  {
+    "message": "La persona ya está registrada como médico"
+  }
+  ```
+  
+  Email or person is duplicated
+  ```json
+  {
+    "message": "Email o persona duplicada"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while creating doctor
+  ```json
+  {
+    "message": "Error al crear médico"
+  }
+  ```
+</ResponseField>
+
+## Business Rules
+
+<Note>
+  **Important validation rules:**
+  - The person must exist in the `personas` table
+  - The person cannot already have a user account (usuario role)
+  - The person cannot already be registered as a doctor
+  - The email must be unique across all doctors
+  - The specialty must exist in the `especialidades` table
+</Note>

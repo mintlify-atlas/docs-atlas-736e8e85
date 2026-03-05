@@ -1,0 +1,89 @@
+---
+title: 'List Specialties'
+api: 'GET /api/especialidades'
+description: 'Retrieve a list of all medical specialties'
+---
+
+This endpoint returns a list of all available medical specialties in the system, sorted alphabetically by name.
+
+## Authentication
+
+No authentication required - this is a public endpoint.
+
+## Query Parameters
+
+No query parameters required.
+
+## Response
+
+Returns an array of specialty objects.
+
+<ResponseField name="specialties" type="array">
+  Array of specialty objects sorted by name
+  
+  <ResponseField name="[].id" type="number">
+    Specialty ID
+  </ResponseField>
+  
+  <ResponseField name="[].nombre" type="string">
+    Specialty name
+  </ResponseField>
+  
+  <ResponseField name="[].descripcion" type="string">
+    Specialty description
+  </ResponseField>
+  
+  <ResponseField name="[].created_at" type="string">
+    Creation timestamp
+  </ResponseField>
+  
+  <ResponseField name="[].updated_at" type="string">
+    Last update timestamp
+  </ResponseField>
+</ResponseField>
+
+## Error Responses
+
+<ResponseField name="500 Internal Server Error" type="object">
+  Returned when a server error occurs
+  
+  ```json
+  {
+    "message": "Error al listar especialidades"
+  }
+  ```
+</ResponseField>
+
+## Example Request
+
+```bash
+curl https://api.example.com/api/especialidades
+```
+
+## Example Response
+
+```json
+[
+  {
+    "id": 1,
+    "nombre": "Cardiología",
+    "descripcion": "Especialidad médica que se ocupa del diagnóstico y tratamiento de las enfermedades del corazón",
+    "created_at": "2026-01-15T08:00:00.000Z",
+    "updated_at": "2026-01-15T08:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "nombre": "Dermatología",
+    "descripcion": "Especialidad dedicada al estudio de la piel y sus enfermedades",
+    "created_at": "2026-01-15T08:00:00.000Z",
+    "updated_at": "2026-01-15T08:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "nombre": "Pediatría",
+    "descripcion": "Especialidad médica que se centra en la salud y las enfermedades de los niños",
+    "created_at": "2026-01-15T08:00:00.000Z",
+    "updated_at": "2026-01-15T08:00:00.000Z"
+  }
+]
+```

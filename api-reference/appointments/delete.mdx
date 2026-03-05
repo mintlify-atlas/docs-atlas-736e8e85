@@ -1,0 +1,84 @@
+---
+title: "Delete Appointment"
+api: "DELETE /api/citas/:id"
+description: "Permanently delete an appointment from the system"
+---
+
+## Authentication
+
+This endpoint requires authentication and authorization.
+
+**Required role:** `admin` only
+
+**Header:**
+```
+Authorization: Bearer <token>
+```
+
+## Path Parameters
+
+<ParamField path="id" type="number" required>
+  The appointment ID to delete
+</ParamField>
+
+## Response
+
+Returns a success message confirming deletion.
+
+<ResponseField name="message" type="string">
+  Success message confirming the appointment was deleted
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X DELETE https://api.example.com/api/citas/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+## Example Response
+
+```json
+{
+  "message": "Cita eliminada correctamente"
+}
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  Missing or invalid authentication token
+  
+  ```json
+  {
+    "message": "Token no proporcionado"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden">
+  User doesn't have admin role
+  
+  ```json
+  {
+    "message": "Acceso denegado: requiere rol admin"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="500 Internal Server Error">
+  Server error while deleting appointment
+  
+  ```json
+  {
+    "message": "Error al eliminar cita"
+  }
+  ```
+</ResponseField>
+
+## Notes
+
+- This endpoint is restricted to users with the `admin` role only
+- The deletion is permanent and cannot be undone
+- Consider using the cancel endpoint instead of delete to preserve records
+- If the appointment ID doesn't exist, the operation may still return success or a 500 error depending on database constraints

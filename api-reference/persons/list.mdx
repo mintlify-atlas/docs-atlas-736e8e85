@@ -1,0 +1,34 @@
+---
+title: 'List Persons'
+openapi: 'GET /api/personas'
+---
+
+Retrieves a list of all persons (personas) registered in the system.
+
+## Authentication
+
+This endpoint requires authentication and **admin** role access.
+
+## Key Information
+
+- Persons contain personal information (name, DNI, contact details, etc.)
+- Results are ordered by ID in descending order (newest first)
+- This endpoint returns all persona records, whether or not they're linked to users
+
+## Response
+
+Returns an array of persona objects with fields including:
+
+- `id` (integer): Auto-incremented persona identifier
+- `dni` (string): Document identification number (unique)
+- `nombre` (string): First name
+- `apellido` (string): Last name
+- Additional personal information fields
+
+## Relationship with Usuarios
+
+Personas represent personal information, while Usuarios represent authentication and authorization:
+
+- A Persona can exist without a Usuario (e.g., patient records)
+- A Usuario should typically be linked to a Persona via `persona_id`
+- Staff members (admin, asistente) have both a Usuario and Persona record

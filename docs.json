@@ -1,122 +1,152 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Medical Center API",
+  "theme": "palm",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#0ea5e9",
+    "light": "#38bdf8",
+    "dark": "#0284c7"
   },
   "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/Bran258/api_centro_medico"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/Bran258/api_centro_medico"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
-              "index",
+              "introduction",
               "quickstart",
-              "development"
+              "authentication"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "concepts/database-schema",
+              "concepts/user-roles",
+              "concepts/appointment-workflow"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Guides",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/setup",
+              "guides/environment-variables",
+              "guides/database-setup",
+              "guides/deployment"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Public Endpoints",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/public/appointments",
+              "api-reference/public/doctors",
+              "api-reference/public/specialties",
+              "api-reference/public/contact"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Appointments",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/appointments/list",
+              "api-reference/appointments/get",
+              "api-reference/appointments/confirm",
+              "api-reference/appointments/attend",
+              "api-reference/appointments/cancel",
+              "api-reference/appointments/delete",
+              "api-reference/appointments/search"
+            ]
+          },
+          {
+            "group": "Doctors",
+            "pages": [
+              "api-reference/doctors/list",
+              "api-reference/doctors/create",
+              "api-reference/doctors/update",
+              "api-reference/doctors/delete"
+            ]
+          },
+          {
+            "group": "Specialties",
+            "pages": [
+              "api-reference/specialties/list",
+              "api-reference/specialties/create",
+              "api-reference/specialties/update",
+              "api-reference/specialties/delete"
+            ]
+          },
+          {
+            "group": "Users & Persons",
+            "pages": [
+              "api-reference/users/list",
+              "api-reference/users/create",
+              "api-reference/users/update",
+              "api-reference/users/delete",
+              "api-reference/persons/list",
+              "api-reference/persons/create",
+              "api-reference/persons/update",
+              "api-reference/persons/delete"
+            ]
+          },
+          {
+            "group": "Clients",
+            "pages": [
+              "api-reference/clients/list",
+              "api-reference/clients/get"
+            ]
+          },
+          {
+            "group": "Contact",
+            "pages": [
+              "api-reference/contact/list",
+              "api-reference/contact/get",
+              "api-reference/contact/update",
+              "api-reference/contact/delete"
+            ]
+          },
+          {
+            "group": "Medical History",
+            "pages": [
+              "api-reference/history/create",
+              "api-reference/history/get"
+            ]
+          },
+          {
+            "group": "Dashboard",
+            "pages": [
+              "api-reference/dashboard/stats",
+              "api-reference/dashboard/appointments-by-status",
+              "api-reference/dashboard/recent-appointments",
+              "api-reference/dashboard/upcoming-appointments"
+            ]
+          },
+          {
+            "group": "Authentication",
+            "pages": [
+              "api-reference/auth/login",
+              "api-reference/auth/verify"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

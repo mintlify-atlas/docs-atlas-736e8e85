@@ -1,0 +1,45 @@
+---
+title: 'Create User'
+openapi: 'POST /api/usuarios'
+---
+
+Creates a new user in the system. This endpoint is used to register users that have already been created in Supabase Auth.
+
+## Authentication
+
+This endpoint requires authentication and **admin** role access.
+
+## Key Information
+
+- The `id` parameter must be a valid Supabase UUID from Supabase Auth
+- Users cannot be created with duplicate IDs
+- The `persona_id` is optional and can be linked later
+- Valid roles include: "admin" and "asistente"
+
+## Request Body
+
+- `id` (string, required): Supabase UUID from Supabase Auth
+- `role` (string, required): User role assignment
+- `persona_id` (integer, optional): Link to an existing persona record
+
+## Response
+
+Returns the created user object:
+
+- `id` (string): Supabase UUID identifying the user
+- `persona_id` (integer, nullable): Foreign key to the personas table
+- `role` (string): Assigned user role
+- `created_at` (datetime): Timestamp of user creation
+
+## Error Responses
+
+- `400`: Missing required fields (id or role)
+- `409`: User with this ID already exists
+
+## Supabase Integration
+
+Usuarios use Supabase UUID as their primary identifier. This means:
+
+1. Users must first be created in Supabase Auth
+2. The Supabase UUID is then used to create the corresponding record in this system
+3. This links authentication (Supabase) with authorization (role in this system)

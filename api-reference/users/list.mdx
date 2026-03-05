@@ -1,0 +1,31 @@
+---
+title: 'List Users'
+openapi: 'GET /api/usuarios'
+---
+
+Retrieves a list of all users in the system, including their associated persona information.
+
+## Authentication
+
+This endpoint requires authentication and **admin** role access.
+
+## Key Information
+
+- Users are authenticated via Supabase Auth
+- The `id` field is a Supabase UUID, not an auto-incremented integer
+- Each user can be linked to a persona record via `persona_id`
+- Results are ordered by creation date (newest first)
+
+## Response
+
+Returns an array of user objects with the following structure:
+
+- `id` (string): Supabase UUID identifying the user
+- `persona_id` (integer, nullable): Foreign key to the personas table
+- `role` (string): User role (e.g., "admin", "asistente")
+- `created_at` (datetime): Timestamp of user creation
+- `persona` (object, nullable): Associated persona details if linked
+
+## Relationship with Personas
+
+Usuarios (Users) are linked to Personas through the `persona_id` field. A Usuario represents the authentication and authorization layer, while a Persona contains the actual personal information (name, DNI, contact details, etc.).

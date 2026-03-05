@@ -1,0 +1,324 @@
+---
+title: 'Database Setup'
+description: 'Set up and manage the PostgreSQL database for the Medical Center API'
+---
+
+## Overview
+
+The Medical Center API uses PostgreSQL as its database and Prisma as the ORM. This guide covers setting up the database, running migrations, and seeding initial data.
+
+## Database Schema
+
+The database schema is defined in `prisma/schema.prisma` and includes the following models:
+
+- **Personas** - Internal system users (admin, assistants, doctors)
+- **Usuarios** - User authentication linked to Supabase
+- **Clientes_publicos** - Public clients (no authentication required)
+- **Medicos** - Doctors with specialties
+- **Especialidades** - Medical specialties
+- **Citas** - Appointment bookings
+- **Contacto** - Contact form submissions
+- **Historial** - Medical history records
+
+## Prerequisites
+
+Before setting up the database:
+
+1. Install PostgreSQL (v14 or higher)
+2. Create a database:
+   ```bash
+   createdb medical_center
+   ```
+3. Configure `DATABASE_URL` in your `.env` file (see [Environment Variables](/guides/environment-variables))
+
+## Initial Setup
+
+<Steps>
+  <Step title="Generate Prisma Client">
+    Generate the Prisma Client based on your schema:
+    
+    ```bash
+    npx prisma generate
+    ```
+    
+    This creates the typed Prisma Client in `node_modules/@prisma/client`.
+    
+    <Note>
+    This command runs automatically after `npm install` via the postinstall script.
+    </Note>
+  </Step>
+
+  <Step title="Run migrations">
+    Apply all pending migrations to create the database schema:
+    
+    ```bash
+    npx prisma migrate dev
+    ```
+    
+    This will:
+    - Create the database if it doesn't exist
+    - Apply all migration files in order
+    - Generate the Prisma Client
+    - Prompt you to name the migration if there are schema changes
+  </Step>
+
+  <Step title="Seed the database">
+    Populate the database with initial data:
+    
+    ```bash
+    node prisma/seed.js
+    ```
+    
+    This seeds the `Especialidades` table with:
+    - Medicina General
+    - Pediatría
+    - Ginecología
+    - Cardiología
+    - Traumatología
+  </Step>
+</Steps>
+
+## Migration History
+
+The following migrations have been applied to the database:
+
+1. **20251214032453_init** - Initial database schema
+2. **20251214033348_add_especialidades** - Added medical specialties
+3. **20251214062323_nuevo_flujo** - New appointment workflow
+4. **20251215004108_add_foto_url_to_personas** - Added photo URL to persons
+5. **20251219201958_add_asunto_to_contacto** - Added subject field to contacts
+
+## Common Database Operations
+
+### Viewing the Database
+
+Open Prisma Studio to browse and edit data visually:
+
+```bash
+npx prisma studio
+```
+
+This opens a web interface at `http://localhost:5555` where you can view and modify data.
+
+### Creating a New Migration
+
+When you modify `prisma/schema.prisma`, create a new migration:
+
+```bash
+npx prisma migrate dev --name description_of_changes
+```
+
+Example:
+```bash
+npx prisma migrate dev --name add_appointment_notes
+```
+
+### Resetting the Database
+
+<Warning>
+This will delete all data in your database!
+</Warning>
+
+To reset the database and reapply all migrations:
+
+```bash
+npx prisma migrate reset
+```
+
+This will:
+1. Drop the database
+2. Create a new database
+3. Apply all migrations
+4. Run the seed script
+
+### Viewing Migration Status
+
+Check which migrations have been applied:
+
+```bash
+npx prisma migrate status
+```
+
+### Deploying Migrations to Production
+
+For production environments, use:
+
+```bash
+npx prisma migrate deploy
+```
+
+This applies pending migrations without prompting for migration names.
+
+## Database Seeding
+
+The seed script (`prisma/seed.js`) populates initial data for medical specialties.
+
+### Seed Script Details
+
+Location: `prisma/seed.js`
+
+```javascript
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const especialidades = [
+    { nombre: "Medicina General" },
+    { nombre: "Pediatría" },
+    { nombre: "Ginecología" },
+    { nombre: "Cardiología" },
+    { nombre: "Traumatología" },
+  ];
+
+  for (const e of especialidades) {
+    await prisma.especialidades.upsert({
+      where: { nombre: e.nombre },
+      update: {},
+      create: e,
+    });
+  }
+
+  console.log("Especialidades cargadas");
+}
+
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());
+```
+
+The script uses `upsert` to avoid duplicate entries when run multiple times.
+
+### Running the Seed Script
+
+```bash
+node prisma/seed.js
+```
+
+You should see: `Especialidades cargadas`
+
+## Database Connection Modes
+
+The API supports two database connection modes:
+
+<CodeGroup>
+```bash Direct Connection (Migrations)
+# Use port 5432 for migrations
+DATABASE_URL="postgresql://postgres:password@localhost:5432/medical_center"
+```
+
+```bash Connection Pooling (Production)
+# Use port 6543 with PgBouncer for production
+DATABASE_URL="postgresql://user:password@host:6543/postgres?pgbouncer=true"
+```
+</CodeGroup>
+
+<Warning>
+**Important:** Always use the direct connection (port 5432) when running migrations. PgBouncer in transaction mode is not compatible with Prisma migrations.
+</Warning>
+
+## Schema Overview
+
+### Enums
+
+```prisma
+enum rol_usuario {
+  admin
+  asistente
+}
+
+enum estado_cita {
+  pendiente
+  confirmada
+  cancelada
+  atendida
+}
+```
+
+### Key Relationships
+
+- `Personas` → `Usuarios` (one-to-one) - Links internal users to Supabase auth
+- `Personas` → `Medicos` (one-to-one) - Links doctors to person records
+- `Medicos` → `Especialidades` (many-to-one) - Each doctor has one specialty
+- `Clientes_publicos` → `Citas` (one-to-many) - Clients can have multiple appointments
+- `Medicos` → `Citas` (one-to-many) - Doctors can have multiple appointments
+- `Citas` → `Historial` (one-to-many) - Appointments can have multiple history records
+
+## Troubleshooting
+
+### Migration fails with "Database does not exist"
+
+Create the database manually:
+```bash
+createdb medical_center
+```
+
+Or let Prisma create it:
+```bash
+npx prisma migrate dev
+```
+
+### "Schema is out of sync" error
+
+Generate the Prisma Client:
+```bash
+npx prisma generate
+```
+
+### Connection refused errors
+
+Verify PostgreSQL is running:
+```bash
+pg_isready
+```
+
+Check connection settings in `.env`:
+```bash
+echo $DATABASE_URL
+```
+
+### Seed script fails
+
+Ensure migrations are applied first:
+```bash
+npx prisma migrate dev
+node prisma/seed.js
+```
+
+## Production Considerations
+
+### Connection Pooling
+
+For production, use PgBouncer for connection pooling:
+
+```bash
+DATABASE_URL="postgresql://user:pass@host:6543/postgres?pgbouncer=true"
+```
+
+### Backups
+
+Regularly backup your production database:
+
+```bash
+pg_dump medical_center > backup_$(date +%Y%m%d).sql
+```
+
+Restore from backup:
+
+```bash
+psql medical_center < backup_20250305.sql
+```
+
+### Database Migrations in Production
+
+1. **Test migrations in staging first**
+2. Use `prisma migrate deploy` for production
+3. Never use `prisma migrate dev` in production
+4. Always backup before running migrations
+
+## Next Steps
+
+- [Explore API endpoints](/api-reference/public/appointments)
+- [Deploy to production](/guides/deployment)
+- [Configure environment variables](/guides/environment-variables)

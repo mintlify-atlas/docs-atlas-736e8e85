@@ -1,0 +1,153 @@
+---
+title: 'Verify Authentication'
+api: 'GET /api/admin-auth/verify'
+description: 'Verify authentication token and check user permissions'
+---
+
+<Note>
+  Based on the source code analysis, there is no explicit `/verify` endpoint in the `adminAuth.routes.js` file.
+  
+  Token verification is handled automatically by the `authMiddleware` on protected endpoints. However, you can verify authentication by calling any protected endpoint, such as `/api/usuarios/me`.
+</Note>
+
+## How Authentication Verification Works
+
+The authentication verification process happens through the `authMiddleware` that protects all authenticated endpoints:
+
+1. **Token extraction**: The middleware extracts the Bearer token from the `Authorization` header
+2. **JWT decoding**: The token is decoded (not verified, as Supabase handles verification)
+3. **User lookup**: The system looks up the user in the internal database using the `sub` (user ID) from the token
+4. **Permission check**: The user's role is checked against required permissions
+
+## Verifying Your Token
+
+To verify if your authentication token is valid, call any protected endpoint. For example:
+
+### Get Current User Profile
+
+```bash
+curl -X GET https://api.example.com/api/usuarios/me \
+  -H "Authorization: Bearer <token>"
+```
+
+### Successful Response
+
+If your token is valid and you have the correct permissions:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "persona_id": 15,
+  "role": "admin",
+  "created_at": "2026-01-15T10:00:00.000Z",
+  "persona": {
+    "id": 15,
+    "nombres": "Carlos",
+    "apellidos": "Administrador",
+    "telefono": "+502 5555-0000"
+  }
+}
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized" type="object">
+  Returned when no token is provided or token is invalid
+  
+  ```json
+  {
+    "message": "Token requerido"
+  }
+  ```
+  
+  or
+  
+  ```json
+  {
+    "message": "Token inválido"
+  }
+  ```
+  
+  or
+  
+  ```json
+  {
+    "message": "Error de autenticación"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="403 Forbidden" type="object">
+  Returned when the user exists but doesn't have permission
+  
+  ```json
+  {
+    "message": "Usuario no autorizado"
+  }
+  ```
+  
+  or (from role middleware)
+  
+  ```json
+  {
+    "message": "Acceso denegado"
+  }
+  ```
+</ResponseField>
+
+## Token Requirements
+
+- Must be a valid Supabase JWT token
+- Must be sent in the `Authorization` header with `Bearer` scheme
+- The token's `sub` claim must match a user ID in the `usuarios` table
+- The user must have an appropriate role (`admin` or `asistente` for most endpoints)
+
+## Implementation Details
+
+From `auth.middleware.js`:
+
+```javascript
+export async function authMiddleware(req, res, next) {
+  const auth = req.headers.authorization;
+
+  if (!auth || !auth.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Token requerido" });
+  }
+
+  const token = auth.replace("Bearer ", "");
+
+  try {
+    // Decode token (Supabase already validated it)
+    const payload = jwt.decode(token);
+
+    if (!payload || !payload.sub) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+
+    // Look up internal user
+    const usuario = await prisma.usuarios.findUnique({
+      where: { id: payload.sub },
+    });
+
+    if (!usuario) {
+      return res.status(403).json({ message: "Usuario no autorizado" });
+    }
+
+    req.user = usuario;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Error de autenticación" });
+  }
+}
+```
+
+## Related Endpoints
+
+- See [Admin Login](/api-reference/auth/login) for authentication flow
+- Any protected endpoint can be used to verify token validity
+
+## Notes
+
+- The middleware only **decodes** the JWT, it doesn't verify the signature (Supabase handles that)
+- User must exist in the internal `usuarios` table, not just in Supabase Auth
+- The decoded user information is attached to `req.user` for use in subsequent middleware and route handlers

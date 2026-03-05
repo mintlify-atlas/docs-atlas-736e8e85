@@ -1,0 +1,307 @@
+---
+title: 'User Roles & Access Control'
+description: 'Understanding the two-tier user system and role-based permissions in the Medical Center API'
+---
+
+## Two-Tier User System
+
+The Medical Center API implements a **dual user architecture** that separates authenticated internal staff from unauthenticated public clients.
+
+### Internal Users (Authenticated)
+
+**Personas + Usuarios** → Staff members who authenticate via Supabase and have system access.
+
+- Admins (`admin`)
+- Assistants (`asistente`)
+- Doctors (linked to `Personas` but **not authenticated**)
+
+### Public Users (Unauthenticated)
+
+**Clientes_publicos** → External users who submit appointment requests without authentication.
+
+- Created automatically when booking appointments
+- No login credentials
+- No system access
+
+<Info>
+  This separation ensures that public appointment booking is frictionless while maintaining strict access control for internal operations.
+</Info>
+
+## Role Definitions
+
+### Admin Role
+
+```prisma
+role: "admin"
+```
+
+Administrators have **full system access** and can perform all operations:
+
+<Accordion title="Admin Capabilities">
+  **User Management**
+  - Create, update, and delete internal users (`/api/usuarios`)
+  - Assign roles to users
+  - View all user profiles
+
+  **Doctor Management**
+  - Create, update, and delete doctor profiles (`/api/medicos`)
+  - Manage doctor specialties
+  - Activate/deactivate doctors
+
+  **Appointment Management**
+  - View all appointments (`/api/citas`)
+  - Confirm and assign appointments to doctors
+  - Cancel appointments
+  - Mark appointments as attended
+  - **Delete appointments** (admin-only)
+
+  **Client Management**
+  - View and search public clients
+  - Update client information
+
+  **System Configuration**
+  - Manage specialties
+  - Access all dashboard statistics
+</Accordion>
+
+### Asistente Role
+
+```prisma
+role: "asistente"
+```
+
+Assistants have **limited access** focused on appointment and client management:
+
+<Accordion title="Asistente Capabilities">
+  **Appointment Management**
+  - View all appointments (`/api/citas`)
+  - Confirm and assign appointments to doctors
+  - Cancel appointments
+  - Mark appointments as attended
+  - Search appointments by patient name
+
+  **Client Management**
+  - View public client information
+  - Update client details
+
+  **Read-Only Access**
+  - View doctor list (cannot modify)
+  - View their own profile (`/api/usuarios/me`)
+
+  **Restricted Operations**
+  - ❌ Cannot create or delete users
+  - ❌ Cannot manage doctors
+  - ❌ Cannot delete appointments
+  - ❌ Cannot modify system configuration
+</Accordion>
+
+### Doctor (No Authentication)
+
+Doctors are **NOT authenticated users**. They exist in the system as `Medicos` records but don't have login credentials.
+
+<Warning>
+  Doctors cannot access the API directly. All doctor-related data is managed by admins and assistants.
+</Warning>
+
+## Authentication Implementation
+
+The API uses **Supabase Authentication** with custom middleware for role checking.
+
+### Auth Middleware
+
+Verifies JWT tokens and loads user data:
+
+```javascript
+// src/middleware/auth.middleware.js
+export async function authMiddleware(req, res, next) {
+  const auth = req.headers.authorization;
+
+  if (!auth || !auth.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Token requerido" });
+  }
+
+  const token = auth.replace("Bearer ", "");
+
+  try {
+    // Decode JWT (Supabase already validated it)
+    const payload = jwt.decode(token);
+
+    if (!payload || !payload.sub) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+
+    // Fetch internal user record
+    const usuario = await prisma.usuarios.findUnique({
+      where: { id: payload.sub },
+    });
+
+    if (!usuario) {
+      return res.status(403).json({ message: "Usuario no autorizado" });
+    }
+
+    req.user = usuario; // { id, persona_id, role }
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Error de autenticación" });
+  }
+}
+```
+
+<Note>
+  The middleware only **decodes** the JWT (doesn't verify signature) because Supabase has already validated the token. It then checks if the user exists in the internal `usuarios` table.
+</Note>
+
+### Role Middleware
+
+Enforces role-based access control:
+
+```javascript
+// src/middleware/role.middleware.js
+export function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Acceso denegado" });
+    }
+    next();
+  };
+}
+```
+
+## Route Protection Examples
+
+### Admin-Only Endpoint
+
+```javascript
+// Only admins can delete appointments
+router.delete(
+  "/:id",
+  authMiddleware,
+  requireRole("admin"),
+  async (req, res) => {
+    // Delete appointment logic
+  }
+);
+```
+
+### Admin + Asistente Endpoint
+
+```javascript
+// Both admins and assistants can view appointments
+router.get(
+  "/",
+  authMiddleware,
+  requireRole("admin", "asistente"),
+  async (req, res) => {
+    // List appointments logic
+  }
+);
+```
+
+### Public Endpoint (No Auth)
+
+```javascript
+// Anyone can create an appointment request
+router.post("/", async (req, res) => {
+  // Create appointment logic
+});
+```
+
+## Role-Based Access Matrix
+
+| Resource | Admin | Asistente | Public |
+|----------|-------|-----------|--------|
+| **Appointments** | | | |
+| Create request | ✅ | ✅ | ✅ |
+| View all | ✅ | ✅ | ❌ |
+| Confirm/Assign | ✅ | ✅ | ❌ |
+| Cancel | ✅ | ✅ | ❌ |
+| Mark attended | ✅ | ✅ | ❌ |
+| Delete | ✅ | ❌ | ❌ |
+| **Doctors** | | | |
+| View list (public) | ✅ | ✅ | ✅ |
+| View full details | ✅ | ✅ | ❌ |
+| Create | ✅ | ❌ | ❌ |
+| Update | ✅ | ❌ | ❌ |
+| Delete | ✅ | ❌ | ❌ |
+| **Users** | | | |
+| Create | ✅ | ❌ | ❌ |
+| List all | ✅ | ❌ | ❌ |
+| View own profile | ✅ | ✅ | ❌ |
+| Update roles | ✅ | ❌ | ❌ |
+| Delete | ✅ | ❌ | ❌ |
+| **Clients** | | | |
+| Create (auto) | ✅ | ✅ | ✅ |
+| View | ✅ | ✅ | ❌ |
+| Update | ✅ | ✅ | ❌ |
+
+## User Creation Flow
+
+<Accordion title="How to Create an Internal User">
+  1. **Admin creates persona** via `/api/personas` with personal details
+  2. **User signs up in Supabase** (gets UUID)
+  3. **Admin creates usuario** via `/api/usuarios` linking:
+     - Supabase UUID (`id`)
+     - Persona ID (`persona_id`)
+     - Role (`role`: `admin` or `asistente`)
+</Accordion>
+
+## Retrieving User Role
+
+### On Login
+
+After Supabase authentication, the client fetches the user's role:
+
+```javascript
+GET /api/usuarios/supabase/:id
+
+Response:
+{
+  "role": "admin"
+}
+```
+
+<Info>
+  This endpoint is **not protected** by `authMiddleware` because it's called immediately after login to determine the user's role.
+</Info>
+
+### For Current User
+
+Authenticated users can fetch their complete profile:
+
+```javascript
+GET /api/usuarios/me
+Authorization: Bearer <token>
+
+Response:
+{
+  "id": "uuid-from-supabase",
+  "persona_id": 5,
+  "role": "asistente",
+  "created_at": "2024-01-15T10:30:00Z",
+  "persona": {
+    "id": 5,
+    "nombres": "María",
+    "apellidos": "González",
+    "telefono": "555-0123",
+    "dni": "12345678",
+    "foto_url": null
+  }
+}
+```
+
+## Best Practices
+
+<Warning>
+  **Security Considerations**
+  - Always use `authMiddleware` before `requireRole`
+  - Never hardcode roles in frontend - always fetch from API
+  - Validate user permissions on every protected endpoint
+  - Supabase handles token validation - backend only checks role authorization
+</Warning>
+
+<Note>
+  **Role Assignment**
+  - Only admins can create and modify user roles
+  - Role changes take effect immediately (no re-login required)
+  - A user's role is tied to their UUID from Supabase
+</Note>
